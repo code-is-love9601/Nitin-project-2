@@ -128,32 +128,36 @@ select,input{background:#0a2939;color:white;border:1px solid #426271}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 footer{text-align:center;color:var(--muted);padding:25px}
 
-/* --- Tawk Style Green Chatbot Widget --- */
+/* --- Round Circular Green Chat Toggle Button --- */
 #chatToggle {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 25px;
+  bottom: 25px;
+  width: 60px;
+  height: 60px;
   background-color: #00a86b;
   color: white;
   border: none;
-  padding: 12px 20px;
-  border-radius: 30px;
-  font-size: 15px;
-  font-weight: bold;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  border-radius: 50%;
+  font-size: 26px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
   cursor: pointer;
   z-index: 99999;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: transform 0.2s;
+  justify-content: center;
+  transition: transform 0.2s, background-color 0.2s;
+  padding: 0;
 }
-#chatToggle:hover { transform: scale(1.05); }
+#chatToggle:hover { 
+  transform: scale(1.1); 
+  background-color: #00c98b;
+}
 
 #chatWindow {
   position: fixed;
-  bottom: 85px;
-  right: 20px;
+  bottom: 95px;
+  right: 25px;
   width: 330px;
   height: 440px;
   background: #ffffff;
@@ -349,9 +353,9 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
 
-<!-- Green Chat Toggle Button -->
+<!-- Circular Green Chat Toggle Button -->
 <button id="chatToggle" onclick="toggleChatWindow()">
-  💬 Bus Help
+  💬
 </button>
 
 <!-- Customer Support Chat Window -->
