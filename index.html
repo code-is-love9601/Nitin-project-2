@@ -34,13 +34,13 @@ a{color:inherit;text-decoration:none}
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(3, 19, 33, 0.92);
+  background: rgba(3, 19, 33, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999999;
   backdrop-filter: blur(5px);
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 }
 .lang-box {
   background: var(--panel);
@@ -203,7 +203,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
   }
 }
 
-/* --- Floating Orange Chat Button (Like Screenshot) --- */
+/* --- Floating Orange Chat Button --- */
 #floatingChatBtn {
   position: fixed;
   bottom: 25px;
@@ -312,9 +312,9 @@ footer{text-align:center;color:var(--muted);padding:25px}
     <h3>🌐 Select Language</h3>
     <p>Please choose your preferred language to continue / कृपया अपनी पसंदीदा भाषा चुनें</p>
     <div class="lang-buttons">
-      <button class="primary" onclick="selectLanguage('English')">English</button>
-      <button onclick="selectLanguage('Hindi')">हिन्दी</button>
-      <button onclick="selectLanguage('Hinglish')">Hinglish</button>
+      <button class="primary" type="button" onclick="selectLanguage('English')">English</button>
+      <button type="button" onclick="selectLanguage('Hindi')">हिन्दी</button>
+      <button type="button" onclick="selectLanguage('Hinglish')">Hinglish</button>
     </div>
   </div>
 </div>
@@ -431,7 +431,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
 
-<!-- Floating Chat Widget (Screenshot Style) -->
+<!-- Floating Chat Widget -->
 <div id="floatingChatBtn" onclick="toggleChatWindow()">
   <svg viewBox="0 0 24 24">
     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
@@ -493,38 +493,43 @@ let watchId = null;
 let currentRoute = "village";
 let selectedLang = "English";
 
-// Language Selection Handler
+// Fixed Language Selection Handler (No Freezing)
 function selectLanguage(lang) {
   selectedLang = lang;
   const modal = document.getElementById("langModal");
-  modal.style.opacity = "0";
-  setTimeout(() => {
-    modal.style.display = "none";
-  }, 400);
+  if (modal) {
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 300);
+  }
 
   const loaderText = document.getElementById("loaderText");
   const welcomeMsg = document.getElementById("welcomeMsg");
   const chatTitle = document.getElementById("chatTitle");
 
   if (lang === "Hindi") {
-    loaderText.textContent = "लाइव बस रूट कनेक्ट किए जा रहे हैं...";
-    chatTitle.textContent = "कस्टमर सपोर्ट";
-    welcomeMsg.textContent = "BusSaathi में आपका स्वागत है, यदि आपको सहायता चाहिए तो बस इस संदेश का उत्तर दें, हम ऑनलाइन हैं और मदद के लिए तैयार हैं।";
+    if(loaderText) loaderText.textContent = "लाइव बस रूट कनेक्ट किए जा रहे हैं...";
+    if(chatTitle) chatTitle.textContent = "कस्टमर सपोर्ट";
+    if(welcomeMsg) welcomeMsg.textContent = "BusSaathi में आपका स्वागत है, यदि आपको सहायता चाहिए तो बस इस संदेश का उत्तर दें, हम ऑनलाइन हैं और मदद के लिए तैयार हैं।";
   } else if (lang === "Hinglish") {
-    loaderText.textContent = "Live bus routes connect ho rahe hain...";
-    chatTitle.textContent = "Customer Support";
-    welcomeMsg.textContent = "Welcome to BusSaathi, agar help chahiye toh is message ka reply karein, hum online hain aur help ke liye ready hain.";
+    if(loaderText) loaderText.textContent = "Live bus routes connect ho rahe hain...";
+    if(chatTitle) chatTitle.textContent = "Customer Support";
+    if(welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi, agar help chahiye toh is message ka reply karein, hum online hain aur help ke liye ready hain.";
   } else {
-    loaderText.textContent = "Connecting Live Bus Routes...";
-    chatTitle.textContent = "Customer Support";
-    welcomeMsg.textContent = "Welcome to BusSaathi, if you need help simply reply to this message, we are online and ready to help.";
+    if(loaderText) loaderText.textContent = "Connecting Live Bus Routes...";
+    if(chatTitle) chatTitle.textContent = "Customer Support";
+    if(welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi, if you need help simply reply to this message, we are online and ready to help.";
   }
 }
 
 // Toggle Chat Window
 function toggleChatWindow() {
   const win = document.getElementById("chatWindow");
-  win.style.display = (win.style.display === "flex") ? "none" : "flex";
+  if(win) {
+    win.style.display = (win.style.display === "flex") ? "none" : "flex";
+  }
 }
 
 // Handle Chat Message Submit
@@ -533,9 +538,8 @@ function handleChatSubmit(e) {
   const input = document.getElementById("userInput");
   const body = document.getElementById("chatBody");
   
-  if (!input.value.trim()) return;
+  if (!input || !input.value.trim()) return;
 
-  // User Message Bubble
   const userMsg = document.createElement("div");
   userMsg.style.alignSelf = "flex-end";
   userMsg.style.background = "#092535";
@@ -551,7 +555,6 @@ function handleChatSubmit(e) {
   input.value = "";
   body.scrollTop = body.scrollHeight;
 
-  // Bot Auto Reply
   setTimeout(() => {
     const botMsg = document.createElement("div");
     botMsg.className = "chat-msg-green";
@@ -570,18 +573,20 @@ function handleChatSubmit(e) {
 }
 
 function goTo(id) {
-  document.getElementById(id).scrollIntoView({behavior:"smooth"});
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:"smooth"});
 }
 
 function setMapStatus(message) {
-  document.getElementById("mapStatus").textContent = message;
+  const status = document.getElementById("mapStatus");
+  if(status) status.textContent = message;
 }
 
 function initialiseMap() {
   const status = document.getElementById("mapStatus");
 
   if (typeof L === "undefined") {
-    status.textContent = "Map library could not load. Check your internet connection.";
+    if(status) status.textContent = "Map library could not load. Check your internet connection.";
     return;
   }
 
@@ -627,18 +632,25 @@ function renderRoute() {
     stopMarkers.push(marker);
   });
 
-  document.getElementById("stops").innerHTML = data.stops.map(function(stop) {
-    return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
-      stop.time + "</span></li>";
-  }).join("");
+  const stopsEl = document.getElementById("stops");
+  if(stopsEl) {
+    stopsEl.innerHTML = data.stops.map(function(stop) {
+      return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
+        stop.time + "</span></li>";
+    }).join("");
+  }
 
-  document.getElementById("eta").textContent = data.eta;
+  const etaEl = document.getElementById("eta");
+  if(etaEl) etaEl.textContent = data.eta;
   fitRoute();
 }
 
 function changeRoute() {
-  currentRoute = document.getElementById("route").value;
-  renderRoute();
+  const routeSelect = document.getElementById("route");
+  if(routeSelect) {
+    currentRoute = routeSelect.value;
+    renderRoute();
+  }
 }
 
 function fitRoute() {
@@ -657,22 +669,9 @@ function startGPS() {
   const coords = document.getElementById("coordinates");
 
   if (!navigator.geolocation) {
-    status.textContent = "GPS is not supported by this browser.";
+    if(status) status.textContent = "GPS is not supported by this browser.";
     return;
   }
 
-  status.textContent = "Requesting location permission…";
-  startButton.disabled = true;
-
-  try {
-    watchId = navigator.geolocation.watchPosition(
-      function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        status.textContent = "GPS active — location received.";
-        coords.textContent = "Latitude: " + lat.toFixed(6) + " | Longitude: " + lng.toFixed(6);
-
-        if (map && typeof L !== "undefined") {
-          if (!gpsMarker) {
-            gpsMarker = 
+  if(status) status.textContent = "Requesting location permission…";
+  if(startButton) sta
