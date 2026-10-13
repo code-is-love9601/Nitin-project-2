@@ -27,62 +27,7 @@ body{
 }
 a{color:inherit;text-decoration:none}
 
-/* --- Language Selection Modal (Freeze Proof) --- */
-#langModal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(3, 19, 33, 0.95);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999999;
-}
-.lang-box {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 30px;
-  border-radius: 20px;
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-}
-.lang-box h3 {
-  margin-top: 0;
-  color: var(--green);
-  font-size: 24px;
-}
-.lang-box p {
-  color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-.lang-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.lang-buttons button {
-  flex: 1;
-  min-width: 100px;
-  background: #0a2939;
-  border-color: var(--border);
-  color: #fff;
-  cursor: pointer;
-  padding: 12px;
-  border-radius: 10px;
-}
-.lang-buttons button:hover {
-  background: var(--green);
-  color: #00251b;
-  border-color: var(--green);
-}
-
-/* --- Preloader --- */
+/* --- Preloader / Animated Loading Screen Fix --- */
 #preloader {
   position: fixed;
   top: 0;
@@ -94,18 +39,35 @@ a{color:inherit;text-decoration:none}
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 999998;
+  z-index: 999999;
   transition: opacity 0.6s ease;
 }
-.loader-box { text-align: center; }
-.loader-icon { font-size: 55px; animation: busPulse 1s infinite alternate; }
-.loader-logo { font-size: 32px; font-weight: bold; color: var(--green); margin-top: 10px; }
-.loader-text { color: var(--muted); margin-top: 8px; font-size: 15px; }
+.loader-box {
+  text-align: center;
+}
+.loader-icon {
+  font-size: 55px;
+  animation: busPulse 1s infinite alternate;
+}
+.loader-logo {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--green);
+  margin-top: 10px;
+}
+.loader-text {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 15px;
+}
 @keyframes busPulse {
   0% { transform: scale(0.9); opacity: 0.7; }
   100% { transform: scale(1.15); opacity: 1; }
 }
-.hide-preloader { opacity: 0; pointer-events: none; }
+.hide-preloader {
+  opacity: 0;
+  pointer-events: none;
+}
 
 header{
   position:sticky;top:0;z-index:1000;
@@ -135,6 +97,7 @@ h1 span{color:var(--green)}
 .hero p{color:var(--muted);max-width:600px}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
 main{max-width:1300px;margin:auto;padding:25px 3%}
+.section-title{margin-top:0}
 .layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:18px}
 .panel,.feature,.info{
   background:linear-gradient(145deg,#092535,#041724);
@@ -165,22 +128,7 @@ select,input{background:#0a2939;color:white;border:1px solid #426271}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 footer{text-align:center;color:var(--muted);padding:25px}
 
-/* --- Neon Flicker Animation for Developers --- */
-.flicker-text {
-  color: #00e9a1;
-  font-size: 16px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  margin: 6px 0;
-  display: inline-block;
-  animation: neonFlicker 0.8s infinite alternate;
-}
-@keyframes neonFlicker {
-  0%, 100% { opacity: 1; text-shadow: 0 0 8px #00e9a1, 0 0 15px #00e9a1; }
-  50% { opacity: 0.2; text-shadow: none; }
-}
-
-/* --- Green Chat Button & Widget (Matching Screenshot) --- */
+/* --- Tawk Style Green Chatbot Widget --- */
 #chatToggle {
   position: fixed;
   right: 20px;
@@ -290,25 +238,12 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <body>
 
-<!-- Language Selection Modal -->
-<div id="langModal">
-  <div class="lang-box">
-    <h3>🌐 Select Language</h3>
-    <p>Please choose your preferred language.</p>
-    <div class="lang-buttons">
-      <button class="primary" type="button" id="btnEng">English</button>
-      <button type="button" id="btnHin">हिन्दी</button>
-      <button type="button" id="btnHing">Hinglish</button>
-    </div>
-  </div>
-</div>
-
-<!-- Preloader -->
+<!-- Preloader / Live Loading Screen -->
 <div id="preloader">
   <div class="loader-box">
     <div class="loader-icon">🚌</div>
     <div class="loader-logo">BusSaathi</div>
-    <div class="loader-text" id="loaderText">Connecting Live Bus Routes...</div>
+    <div class="loader-text">Connecting Live Bus Routes...</div>
   </div>
 </div>
 
@@ -404,10 +339,9 @@ footer{text-align:center;color:var(--muted);padding:25px}
       <p class="muted">Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.</p>
     </section>
     <section class="info" id="developer">
-      <h2>👨‍💻 Meet the Developers</h2>
+      <h2>👨‍💻 Meet the Developer</h2>
       <p><strong style="color:var(--green)">Nitin</strong></p>
-      <div class="flicker-text">⚡ Nitin, Darsh, Roushan, Naushad, Himanshu ⚡</div>
-      <p class="muted">Special thanks to team help for building BusSaathi!</p>
+      <p class="muted">Student Developer · Computer Science</p>
       <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener">View GitHub Profile ↗</a>
     </section>
   </div>
@@ -420,15 +354,15 @@ footer{text-align:center;color:var(--muted);padding:25px}
   💬 Bus Help
 </button>
 
-<!-- Customer Support Chat Window (Screenshot Style) -->
+<!-- Customer Support Chat Window -->
 <div id="chatWindow">
   <div class="chat-header">
-    <span id="chatTitle">Customer Support</span>
+    <span>Customer Support</span>
     <button onclick="toggleChatWindow()" style="background:none; border:none; color:#333; font-size:16px; cursor:pointer; font-weight:bold;">✕</button>
   </div>
   <div class="chat-body" id="chatBody">
-    <div class="chat-msg-green" id="welcomeMsg">
-      Welcome to BusSaathi, if you need help simply reply to this message, we are online and ready to help.
+    <div class="chat-msg-green">
+      Welcome to our site, if you need help simply reply to this message, we are online and ready to help.
     </div>
   </div>
   <form class="chat-footer" onsubmit="handleChatSubmit(event)">
@@ -473,106 +407,20 @@ let stopMarkers = [];
 let gpsMarker = null;
 let watchId = null;
 let currentRoute = "village";
-let selectedLang = "English";
-
-function selectLanguage(lang) {
-  selectedLang = lang;
-  const modal = document.getElementById("langModal");
-  if (modal) {
-    modal.remove();
-  }
-
-  const loaderText = document.getElementById("loaderText");
-  const welcomeMsg = document.getElementById("welcomeMsg");
-  const chatTitle = document.getElementById("chatTitle");
-
-  if (lang === "Hindi") {
-    if(loaderText) loaderText.textContent = "लाइव बस रूट कनेक्ट किए जा रहे हैं...";
-    if(chatTitle) chatTitle.textContent = "कस्टमर सपोर्ट";
-    if(welcomeMsg) welcomeMsg.textContent = "BusSaathi में आपका स्वागत है, यदि आपको सहायता चाहिए तो बस इस संदेश का उत्तर दें, हम ऑनलाइन हैं और मदद के लिए तैयार हैं।";
-  } else if (lang === "Hinglish") {
-    if(loaderText) loaderText.textContent = "Live bus routes connect ho rahe hain...";
-    if(chatTitle) chatTitle.textContent = "Customer Support";
-    if(welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi, agar help chahiye toh is message ka reply karein, hum online hain aur help ke liye ready hain.";
-  } else {
-    if(loaderText) loaderText.textContent = "Connecting Live Bus Routes...";
-    if(chatTitle) chatTitle.textContent = "Customer Support";
-    if(welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi, if you need help simply reply to this message, we are online and ready to help.";
-  }
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-  const btnEng = document.getElementById("btnEng");
-  const btnHin = document.getElementById("btnHin");
-  const btnHing = document.getElementById("btnHing");
-
-  if(btnEng) btnEng.addEventListener("click", function() { selectLanguage('English'); });
-  if(btnHin) btnHin.addEventListener("click", function() { selectLanguage('Hindi'); });
-  if(btnHing) btnHing.addEventListener("click", function() { selectLanguage('Hinglish'); });
-});
-
-// Toggle Chat Window
-function toggleChatWindow() {
-  const win = document.getElementById("chatWindow");
-  if(win) {
-    win.style.display = (win.style.display === "flex") ? "none" : "flex";
-  }
-}
-
-// Handle Chat Message Submit
-function handleChatSubmit(e) {
-  e.preventDefault();
-  const input = document.getElementById("userInput");
-  const body = document.getElementById("chatBody");
-  
-  if (!input || !input.value.trim()) return;
-
-  const userMsg = document.createElement("div");
-  userMsg.style.alignSelf = "flex-end";
-  userMsg.style.background = "#e0e0e0";
-  userMsg.style.color = "#333";
-  userMsg.style.padding = "10px 14px";
-  userMsg.style.borderRadius = "8px";
-  userMsg.style.maxWidth = "90%";
-  userMsg.textContent = input.value;
-  body.appendChild(userMsg);
-
-  const queryText = input.value.toLowerCase();
-  input.value = "";
-  body.scrollTop = body.scrollHeight;
-
-  setTimeout(() => {
-    const botMsg = document.createElement("div");
-    botMsg.className = "chat-msg-green";
-    
-    let replyText = "Thank you for your message! Our team (Nitin, Darsh, Roushan, Naushad, Himanshu) will check your query soon.";
-    if (queryText.includes("route")) {
-      replyText = "Aap Student Mode me jaakar Village ya Town route select kar sakte hain!";
-    } else if (queryText.includes("gps")) {
-      replyText = "Driver Mode me jakar 'Start GPS Test' dabayein.";
-    }
-
-    botMsg.textContent = replyText;
-    body.appendChild(botMsg);
-    body.scrollTop = body.scrollHeight;
-  }, 700);
-}
 
 function goTo(id) {
-  const el = document.getElementById(id);
-  if(el) el.scrollIntoView({behavior:"smooth"});
+  document.getElementById(id).scrollIntoView({behavior:"smooth"});
 }
 
 function setMapStatus(message) {
-  const status = document.getElementById("mapStatus");
-  if(status) status.textContent = message;
+  document.getElementById("mapStatus").textContent = message;
 }
 
 function initialiseMap() {
   const status = document.getElementById("mapStatus");
 
   if (typeof L === "undefined") {
-    if(status) status.textContent = "Map library could not load. Check your internet connection.";
+    status.textContent = "Map library could not load. Check your internet connection.";
     return;
   }
 
@@ -618,25 +466,18 @@ function renderRoute() {
     stopMarkers.push(marker);
   });
 
-  const stopsEl = document.getElementById("stops");
-  if(stopsEl) {
-    stopsEl.innerHTML = data.stops.map(function(stop) {
-      return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
-        stop.time + "</span></li>";
-    }).join("");
-  }
+  document.getElementById("stops").innerHTML = data.stops.map(function(stop) {
+    return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
+      stop.time + "</span></li>";
+  }).join("");
 
-  const etaEl = document.getElementById("eta");
-  if(etaEl) etaEl.textContent = data.eta;
+  document.getElementById("eta").textContent = data.eta;
   fitRoute();
 }
 
 function changeRoute() {
-  const routeSelect = document.getElementById("route");
-  if(routeSelect) {
-    currentRoute = routeSelect.value;
-    renderRoute();
-  }
+  currentRoute = document.getElementById("route").value;
+  renderRoute();
 }
 
 function fitRoute() {
@@ -655,5 +496,121 @@ function startGPS() {
   const coords = document.getElementById("coordinates");
 
   if (!navigator.geolocation) {
-    if(status) status.textContent = "GPS is not supported by this browser.";
+    status.textContent = "GPS is not supported by this browser.";
+    return;
+  }
+
+  status.textContent = "Requesting location permission…";
+  startButton.disabled = true;
+
+  try {
+    watchId = navigator.geolocation.watchPosition(
+      function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        status.textContent = "GPS active — location received.";
+        coords.textContent = "Latitude: " + lat.toFixed(6) + " | Longitude: " + lng.toFixed(6);
+
+        if (map && typeof L !== "undefined") {
+          if (!gpsMarker) {
+            gpsMarker = L.circleMarker([lat,lng], {
+              radius:9, color:"#ffffff", weight:2,
+              fillColor:"#00e9a1", fillOpacity:1
+            }).addTo(map).bindPopup("Your location");
+          } else {
+            gpsMarker.setLatLng([lat,lng]);
+          }
+          map.setView([lat,lng], 16);
+        }
+        startButton.disabled = false;
+      },
+      function(error) {
+        status.textContent = "GPS error: " + error.message;
+        watchId = null;
+        startButton.disabled = false;
+      },
+      { enableHighAccuracy:true, maximumAge:0, timeout:20000 }
+    );
+  } catch(error) {
+    watchId = null;
+    startButton.disabled = false;
+  }
+}
+
+function stopGPS() {
+  if (watchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  document.getElementById("gpsStatus").textContent = "GPS stopped.";
+  document.getElementById("coordinates").textContent = "";
+  document.getElementById("startBtn").disabled = false;
+}
+
+// Toggle Chat Window
+function toggleChatWindow() {
+  const win = document.getElementById("chatWindow");
+  win.style.display = (win.style.display === "flex") ? "none" : "flex";
+}
+
+// Handle Chat Message Submit
+function handleChatSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById("userInput");
+  const body = document.getElementById("chatBody");
+  
+  if (!input || !input.value.trim()) return;
+
+  const userMsg = document.createElement("div");
+  userMsg.style.alignSelf = "flex-end";
+  userMsg.style.background = "#e0e0e0";
+  userMsg.style.color = "#333";
+  userMsg.style.padding = "10px 14px";
+  userMsg.style.borderRadius = "8px";
+  userMsg.style.maxWidth = "90%";
+  userMsg.textContent = input.value;
+  body.appendChild(userMsg);
+
+  const queryText = input.value.toLowerCase();
+  input.value = "";
+  body.scrollTop = body.scrollHeight;
+
+  setTimeout(() => {
+    const botMsg = document.createElement("div");
+    botMsg.className = "chat-msg-green";
     
+    let replyText = "Thank you for your message! Our team will check your query soon.";
+    if (queryText.includes("route")) {
+      replyText = "Aap Student Mode me jaakar Village ya Town route select kar sakte hain!";
+    } else if (queryText.includes("gps")) {
+      replyText = "Driver Mode me jakar 'Start GPS Test' dabayein.";
+    }
+
+    botMsg.textContent = replyText;
+    body.appendChild(botMsg);
+    body.scrollTop = body.scrollHeight;
+  }, 700);
+}
+
+// Automatic Hide Loading Screen after 1.8 seconds guaranteed
+function removePreloader() {
+  const preloader = document.getElementById("preloader");
+  if (preloader) {
+    preloader.classList.add("hide-preloader");
+    setTimeout(function() {
+      preloader.style.display = "none";
+    }, 600);
+  }
+}
+
+window.addEventListener("load", function() {
+  initialiseMap();
+  setTimeout(removePreloader, 1500); // 1.5 seconds delay
+});
+
+// Fallback: Agar kisi karan load event delay ho, tab bhi 3 second me screen khul jayegi
+setTimeout(removePreloader, 3000);
+</script>
+</body>
+</html>
