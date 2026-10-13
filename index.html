@@ -1,0 +1,490 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusSaathi | College Bus Tracker</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f3f7f4;
+  color:#19352a;
+}
+
+header{
+  background:#155c40;
+  color:white;
+  padding:18px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.logo{font-size:23px;font-weight:bold}
+.tag{
+  font-size:12px;
+  background:#ffffff25;
+  padding:7px 10px;
+  border-radius:20px;
+}
+
+main{max-width:950px;margin:auto;padding:22px 15px}
+
+.hero{
+  background:#e0f1e5;
+  border-radius:22px;
+  padding:25px 20px;
+}
+
+.eyebrow{color:#176544;font-weight:bold;font-size:13px}
+
+h1{font-size:38px;line-height:1.1;margin:12px 0}
+
+p{line-height:1.6;color:#64756a}
+
+button,select{
+  font-size:15px;
+  padding:13px;
+  border-radius:10px;
+  border:0;
+}
+
+button{
+  background:#176544;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{opacity:.9}
+
+.secondary{
+  background:white;
+  color:#176544;
+  border:1px solid #cdded1;
+}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-top:18px;
+}
+
+.card{
+  background:white;
+  border:1px solid #e0e9e2;
+  border-radius:18px;
+  padding:19px;
+  min-width:0;
+}
+
+h2{font-size:20px;margin:8px 0}
+.icon{font-size:28px}
+
+select{
+  width:100%;
+  border:1px solid #d5e1d7;
+  background:white;
+  margin-top:8px;
+}
+
+#map{
+  height:300px;
+  width:100%;
+  margin-top:15px;
+  border-radius:14px;
+  overflow:hidden;
+  background:#e5efe3;
+  z-index:1;
+}
+
+.eta{
+  background:#e5f4e9;
+  border-radius:13px;
+  padding:15px;
+  margin:14px 0;
+}
+
+.eta strong{
+  font-size:29px;
+  color:#176544;
+}
+
+.stop{
+  padding:13px 0;
+  border-bottom:1px solid #e5ebe5;
+}
+
+.stop:last-child{border:0}
+.stop b{display:block}
+.stop small{color:#78867d}
+
+.note{font-size:12px;color:#7b817d}
+#driver{display:none}
+#notice{overflow-wrap:anywhere;font-size:13px}
+
+footer{
+  text-align:center;
+  padding:22px;
+  color:#758278;
+  font-size:13px;
+}
+
+@media(max-width:600px){
+  h1{font-size:32px}
+  .grid{grid-template-columns:1fr}
+  .hero{padding:21px 17px}
+  #map{height:270px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">🚌 BusSaathi</div>
+  <div class="tag">PROJECT DEMO</div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="eyebrow">SMARTER DAILY COMMUTE</div>
+  <h1>Your bus.<br>Your time.</h1>
+  <p>
+    Track your college bus route, explore stops on a real map,
+    and check sample arrival information.
+  </p>
+
+  <div class="actions">
+    <button onclick="studentMode()">📍 Student Mode</button>
+    <button class="secondary" onclick="driverMode()">🧭 Driver Mode</button>
+  </div>
+</section>
+
+<div class="grid">
+
+<section class="card" id="student">
+  <div class="icon">📍</div>
+  <h2>Track Your Bus</h2>
+  <p>Select a route to see its stops on the interactive map.</p>
+
+  <label for="route">Select bus route</label>
+  <select id="route" onchange="changeRoute()">
+    <option value="village">Village Route</option>
+    <option value="town">Town Route</option>
+  </select>
+
+  <div id="map"></div>
+
+  <p class="note">
+    Map powered by OpenStreetMap and Leaflet.
+    Sample stop coordinates are illustrative, not verified bus stops.
+  </p>
+
+  <div class="eta">
+    <div>Estimated arrival at college</div>
+    <strong id="eta">15 minutes</strong>
+    <div class="note" id="etaNote">
+      Sample estimate only — not live traffic data
+    </div>
+  </div>
+
+  <h2>Route Stops</h2>
+  <div id="stops"></div>
+</section>
+
+<section class="card" id="driver">
+  <div class="icon">🧭</div>
+  <h2>Driver Mode</h2>
+  <p>
+    Test your phone's GPS and display your current location
+    on the map. Your location is not sent to students.
+  </p>
+
+  <div class="actions">
+    <button id="start" onclick="startGPS()">Start GPS Test</button>
+    <button class="secondary" onclick="stopGPS()">Stop GPS</button>
+  </div>
+
+  <p id="notice">GPS not started.</p>
+
+  <p class="note">
+    Keep this page open while testing. GPS requires permission
+    and a secure HTTPS website. This demo does not broadcast location.
+  </p>
+</section>
+
+<section class="card">
+  <div class="icon">⏱️</div>
+  <h2>Arrival Information</h2>
+  <p>
+    View the sample arrival estimate for the selected bus route.
+  </p>
+  <p class="note">
+    Accurate live ETA requires actual bus location, route data,
+    and a suitable travel-time calculation.
+  </p>
+</section>
+
+<section class="card">
+  <div class="icon">🔒</div>
+  <h2>Privacy First</h2>
+  <p>
+    Location access requires permission. A production version
+    should use authenticated drivers, secure data access,
+    and clear location-sharing controls.
+  </p>
+</section>
+
+</div>
+</main>
+
+<footer>
+  BusSaathi · Student Project Prototype · Live tracking not connected
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// Sample coordinates only.
+// Replace these with your actual bus-stop coordinates.
+const routeData = {
+  village: {
+    eta: 15,
+    stops: [
+      {
+        name: "Village Stop",
+        info: "Route start · 08:00",
+        lat: 26.7600,
+        lng: 83.3500
+      },
+      {
+        name: "Main Road",
+        info: "Pickup point · 08:10",
+        lat: 26.7650,
+        lng: 83.3600
+      },
+      {
+        name: "College Gate",
+        info: "Destination · 08:25",
+        lat: 26.7700,
+        lng: 83.3700
+      }
+    ]
+  },
+
+  town: {
+    eta: 9,
+    stops: [
+      {
+        name: "Town Bus Stand",
+        info: "Route start · 08:12",
+        lat: 26.7750,
+        lng: 83.3550
+      },
+      {
+        name: "Market Crossing",
+        info: "Pickup point · 08:18",
+        lat: 26.7730,
+        lng: 83.3650
+      },
+      {
+        name: "College Gate",
+        info: "Destination · 08:27",
+        lat: 26.7700,
+        lng: 83.3700
+      }
+    ]
+  }
+};
+
+// Create interactive map
+const map = L.map("map").setView([26.7700, 83.3700], 13);
+
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+// Layers for route stops and route line
+let stopMarkers = L.layerGroup().addTo(map);
+let routeLine = L.polyline([], {
+  color: "#176544",
+  weight: 5,
+  opacity: 0.8
+}).addTo(map);
+
+let gpsMarker = null;
+let watchId = null;
+
+// Draw selected route on map and on the page
+function changeRoute() {
+  const route = document.getElementById("route").value;
+  const data = routeData[route];
+
+  document.getElementById("eta").textContent =
+    data.eta + " minutes";
+
+  document.getElementById("etaNote").textContent =
+    "Sample estimate only — not live traffic data";
+
+  stopMarkers.clearLayers();
+
+  const coordinates = [];
+
+  data.stops.forEach((stop, index) => {
+    const position = [stop.lat, stop.lng];
+    coordinates.push(position);
+
+    const marker = L.marker(position).addTo(stopMarkers);
+
+    marker.bindPopup(
+      "<b>" + stop.name + "</b><br>" + stop.info
+    );
+
+    document.getElementById("stops").innerHTML += "";
+  });
+
+  routeLine.setLatLngs(coordinates);
+
+  if (coordinates.length) {
+    map.fitBounds(routeLine.getBounds(), {
+      padding: [30, 30],
+      maxZoom: 15
+    });
+  }
+
+  document.getElementById("stops").innerHTML =
+    data.stops.map((stop, index) =>
+      '<div class="stop">' +
+        '<b>' + (index === data.stops.length - 1 ? "🏫 " : "📍 ") +
+        stop.name + '</b>' +
+        '<small>' + stop.info + '</small>' +
+      '</div>'
+    ).join("");
+}
+
+// Student Mode
+function studentMode() {
+  document.getElementById("student").scrollIntoView({
+    behavior: "smooth"
+  });
+
+  setTimeout(() => map.invalidateSize(), 300);
+}
+
+// Driver Mode
+function driverMode() {
+  document.getElementById("driver").style.display = "block";
+
+  document.getElementById("driver").scrollIntoView({
+    behavior: "smooth"
+  });
+}
+
+// Test phone GPS and show its marker locally on the map
+function startGPS() {
+  const notice = document.getElementById("notice");
+
+  if (!navigator.geolocation) {
+    notice.textContent =
+      "Your browser does not support GPS location.";
+    return;
+  }
+
+  if (
+    location.protocol !== "https:" &&
+    location.hostname !== "localhost"
+  ) {
+    notice.textContent =
+      "GPS needs a secure HTTPS website. Deploy this page first.";
+    return;
+  }
+
+  if (watchId !== null) return;
+
+  notice.textContent = "Requesting location permission...";
+
+  watchId = navigator.geolocation.watchPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const accuracy = Math.round(position.coords.accuracy);
+
+      notice.textContent =
+        "GPS test successful! Latitude: " + lat.toFixed(5) +
+        ", Longitude: " + lng.toFixed(5) +
+        ". Accuracy: about " + accuracy + " metres. Not shared.";
+
+      const currentPosition = [lat, lng];
+
+      if (!gpsMarker) {
+        gpsMarker = L.marker(currentPosition)
+          .addTo(map)
+          .bindPopup("Your current GPS position");
+      } else {
+        gpsMarker.setLatLng(currentPosition);
+      }
+
+      map.setView(currentPosition, 15);
+      gpsMarker.openPopup();
+    },
+
+    error => {
+      const errors = {
+        1: "Location permission denied. Allow it in browser settings.",
+        2: "Location unavailable. Check phone GPS settings.",
+        3: "Location request timed out. Try again."
+      };
+
+      notice.textContent =
+        errors[error.code] || "Could not get GPS location.";
+
+      watchId = null;
+    },
+
+    {
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 15000
+    }
+  );
+}
+
+// Stop GPS tracking
+function stopGPS() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+
+  watchId = null;
+
+  document.getElementById("notice").textContent =
+    "GPS test stopped. Location is not being shared.";
+
+  if (gpsMarker) {
+    map.removeLayer(gpsMarker);
+    gpsMarker = null;
+  }
+}
+
+// Load the default route
+changeRoute();
+</script>
+
+</body>
+</html>
