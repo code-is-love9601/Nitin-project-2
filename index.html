@@ -1,45 +1,172 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusSaathi | Smart Bus Tracking</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<!-- Map CSS -->
+<link rel="stylesheet"
+ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ crossorigin=""/>
 
 <style>
-:root{--bg:#031321;--panel:#092535;--green:#00e9a1;--text:#f4fbff;--muted:#a8bdca;--border:#087d70}
+:root {
+  --bg:#031321;
+  --panel:#071e2d;
+  --green:#00e9a1;
+  --text:#f4fbff;
+  --muted:#a8bdca;
+  --border:#087d70;
+}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:100px}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;line-height:1.5}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;line-height:1.5
+}
 a{color:inherit;text-decoration:none}
-header{position:sticky;top:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:14px 5%;background:#041522f5;border-bottom:1px solid var(--border)}
+
+/* --- Language Selection Modal --- */
+#langModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(3, 19, 33, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999999;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.4s ease;
+}
+.lang-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+.lang-box h3 {
+  margin-top: 0;
+  color: var(--green);
+  font-size: 24px;
+}
+.lang-box p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+.lang-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.lang-buttons button {
+  flex: 1;
+  min-width: 100px;
+  background: #0a2939;
+  border-color: var(--border);
+}
+.lang-buttons button:hover {
+  background: var(--green);
+  color: #00251b;
+  border-color: var(--green);
+}
+
+/* --- Preloader / Animated Loading Screen Fix --- */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #031321;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  transition: opacity 0.6s ease;
+}
+.loader-box {
+  text-align: center;
+}
+.loader-icon {
+  font-size: 55px;
+  animation: busPulse 1s infinite alternate;
+}
+.loader-logo {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--green);
+  margin-top: 10px;
+}
+.loader-text {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 15px;
+}
+@keyframes busPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+.hide-preloader {
+  opacity: 0;
+  pointer-events: none;
+}
+
+header{
+  position:sticky;top:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:18px;padding:15px 5%;
+  background:#041522f5;border-bottom:1px solid var(--border)
+}
 .logo{font-size:25px;font-weight:bold;color:var(--green)}
-nav{display:flex;gap:16px;flex-wrap:wrap}
+nav{display:flex;gap:20px;flex-wrap:wrap}
 nav a{font-size:14px;color:var(--muted)}
 nav a:hover{color:var(--green)}
-select,input,button{font:inherit;border-radius:10px;padding:11px}
-select,input{background:#0a2939;color:white;border:1px solid #426271;max-width:100%}
+button,select,input{
+  font:inherit;border-radius:10px;padding:12px;
+}
 button{cursor:pointer;border:1px solid var(--green);background:transparent;color:white}
-button:hover{filter:brightness(1.2)}
+button:hover{filter:brightness(1.15)}
 button.primary{background:var(--green);color:#00251b;font-weight:bold}
-button:disabled{opacity:.6;cursor:not-allowed}
-.language-box{display:flex;align-items:center;gap:6px;color:var(--green)}
-.hero{padding:55px 5%;background:radial-gradient(ellipse at 85% 30%,#075348,transparent 38%),linear-gradient(120deg,#041522,#062738)}
+button:disabled{opacity:.55;cursor:not-allowed}
+.hero{
+  padding:55px 5%;min-height:260px;
+  background:radial-gradient(ellipse at 85% 30%,#075348 0%,transparent 38%),
+             linear-gradient(120deg,#041522,#062738);
+}
 .eyebrow{color:var(--green);font-weight:bold;letter-spacing:2px}
 h1{font-size:clamp(34px,5vw,56px);line-height:1.1;margin:12px 0}
 h1 span{color:var(--green)}
-.hero p,.muted{color:var(--muted)}
-.hero p{max-width:650px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.hero p{color:var(--muted);max-width:600px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
 main{max-width:1300px;margin:auto;padding:25px 3%}
-.layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(260px,1fr);gap:18px}
-.panel,.feature,.info{background:linear-gradient(145deg,#092535,#041724);border:1px solid var(--border);border-radius:17px;padding:20px;min-width:0}
+.section-title{margin-top:0}
+.layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:18px}
+.panel,.feature,.info{
+  background:linear-gradient(145deg,#092535,#041724);
+  border:1px solid var(--border);border-radius:17px;padding:20px;
+  min-width:0
+}
 .panel h2{margin-top:0}
+.muted{color:var(--muted)}
 .route-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-#map{width:100%;height:360px;border-radius:13px;margin:15px 0;background:#102b36}
-.map-note{font-size:13px;color:var(--muted)}
+select,input{background:#0a2939;color:white;border:1px solid #426271}
+#route{min-width:160px}
+#map{
+  width:100%;height:380px;border-radius:13px;
+  margin:15px 0;background:#d8e3e3;z-index:1
+}
+.map-note{font-size:12px;color:var(--muted)}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 .stat{border:1px solid var(--border);border-radius:13px;padding:15px}
 .big{font-size:25px;font-weight:bold;color:var(--green)}
@@ -48,92 +175,100 @@ main{max-width:1300px;margin:auto;padding:25px 3%}
 .driver-buttons{display:grid;gap:10px;margin:16px 0}
 .status{padding:14px;border:1px solid #34596a;border-radius:12px;overflow-wrap:anywhere}
 .status strong{color:var(--green)}
-.features{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px}
+.features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
 .feature h3{margin:0 0 8px}
 .feature p{margin:0;color:var(--muted);font-size:14px}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 footer{text-align:center;color:var(--muted);padding:25px}
-#chatbox{position:fixed;right:18px;bottom:82px;width:min(350px,calc(100vw - 36px));background:#071e2d;border:1px solid var(--border);border-radius:15px;padding:15px;z-index:2000;display:none;box-shadow:0 10px 35px #0008}
-#chatMessages{max-height:200px;overflow:auto;font-size:14px;margin:10px 0}
-.chatline{padding:8px;margin:6px 0;background:#103448;border-radius:8px;overflow-wrap:anywhere}
+
+/* --- Flicker Animation for The Boys Group --- */
+.flicker-text {
+  color: var(--green);
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--green), 0 0 10px rgba(0, 233, 161, 0.5);
+  animation: neonFlicker 1.8s infinite alternate;
+}
+@keyframes neonFlicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 5px var(--green), 0 0 10px var(--green), 0 0 20px var(--green);
+  }
+  20%, 24%, 55% {
+    opacity: 0.4;
+    text-shadow: none;
+  }
+}
+
+#chatbox{
+  position:fixed;right:18px;bottom:82px;width:min(340px,calc(100vw - 36px));
+  background:#071e2d;border:1px solid var(--border);
+  border-radius:15px;padding:15px;z-index:2000;display:none;
+  box-shadow:0 10px 35px #0008
+}
+#chatMessages{max-height:180px;overflow:auto;font-size:14px;margin:10px 0}
+.chatline{padding:8px;margin:6px 0;background:#103448;border-radius:8px}
 .chat-controls{display:flex;gap:7px}
 .chat-controls input{width:100%;min-width:0}
 #chatToggle{position:fixed;right:18px;bottom:18px;z-index:2001}
-
-/* THE BOYS GROUP: continuous neon flicker */
-.boys-logo{
- display:inline-block;
- color:#00ffb3;
- font-size:clamp(25px,4vw,36px);
- font-weight:900;
- letter-spacing:3px;
- text-shadow:0 0 5px #00ffb3,0 0 12px #00ffb3,0 0 25px #00ffb3;
- animation:boysFlicker 1.7s infinite;
-}
-@keyframes boysFlicker{
- 0%,18%,22%,25%,53%,57%,100%{opacity:1;text-shadow:0 0 5px #00ffb3,0 0 12px #00ffb3,0 0 25px #00ffb3,0 0 40px #00ffb3}
- 20%,24%,55%{opacity:.25;text-shadow:none}
- 70%{opacity:.85;text-shadow:0 0 8px #00ffb3,0 0 20px #00ffb3}
-}
-
-/* Loading screen never blocks the website for long */
-#preloader{position:fixed;inset:0;background:#031321;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999999;transition:opacity .35s}
-#preloader.hidden{opacity:0;pointer-events:none}
-.loader-icon{font-size:55px;animation:pulse .8s infinite alternate}
-.loader-logo{font-size:32px;font-weight:bold;color:var(--green)}
-.loader-text{color:var(--muted)}
-@keyframes pulse{to{transform:scale(1.12);opacity:.65}}
-
 @media(max-width:850px){
- .layout{grid-template-columns:1fr}
- .features{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .layout{grid-template-columns:1fr}
+  .features{grid-template-columns:repeat(2,1fr)}
+  header{align-items:flex-start;flex-direction:column}
+  nav{gap:14px}
 }
-@media(max-width:550px){
- header{align-items:flex-start}
- nav{gap:12px}
- .hero{padding:35px 5%}
- .features,.bottom,.stats{grid-template-columns:1fr}
- .panel{padding:14px}
- #map{height:300px}
+@media(max-width:500px){
+  .hero{padding:35px 5%}
+  .features,.bottom,.stats{grid-template-columns:1fr}
+  .panel{padding:14px}
+  #map{height:310px}
 }
 </style>
 </head>
+
 <body>
 
+<!-- Language Selection Modal -->
+<div id="langModal">
+  <div class="lang-box">
+    <h3>🌐 Select Language</h3>
+    <p>Please choose your preferred language to continue / कृपया अपनी पसंदीदा भाषा चुनें</p>
+    <div class="lang-buttons">
+      <button class="primary" onclick="selectLanguage('English')">English</button>
+      <button onclick="selectLanguage('Hindi')">हिन्दी</button>
+      <button onclick="selectLanguage('Hinglish')">Hinglish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preloader / Live Loading Screen -->
 <div id="preloader">
-  <div class="loader-icon">🚌</div>
-  <div class="loader-logo">BusSaathi</div>
-  <div class="loader-text" data-i18n="loading">Loading BusSaathi...</div>
+  <div class="loader-box">
+    <div class="loader-icon">🚌</div>
+    <div class="loader-logo">BusSaathi</div>
+    <div class="loader-text" id="loaderText">Connecting Live Bus Routes...</div>
+  </div>
 </div>
 
 <header>
   <a class="logo" href="#home">🚌 BusSaathi</a>
-
-  <label class="language-box">
-    🌐
-    <select id="languageSelect" aria-label="Select language">
-      <option value="en">English</option>
-      <option value="hi">हिन्दी</option>
-    </select>
-  </label>
-
   <nav>
-    <a href="#home" data-i18n="home">Home</a>
-    <a href="#student" data-i18n="student">Student</a>
-    <a href="#driver" data-i18n="driver">Driver</a>
-    <a href="#features" data-i18n="features">Features</a>
-    <a href="#about" data-i18n="about">About</a>
-    <a href="#developer" data-i18n="developer">Developer</a>
+    <a href="#home">Home</a>
+    <a href="#student">Student</a>
+    <a href="#driver">Driver</a>
+    <a href="#features">Features</a>
+    <a href="#about">About</a>
+    <a href="#developer">Developer</a>
   </nav>
 </header>
 
 <section class="hero" id="home">
-  <div class="eyebrow" data-i18n="tagline">SMARTER DAILY COMMUTE</div>
-  <h1 id="heroTitle">Your bus. Your <span>time.</span></h1>
-  <p data-i18n="heroDesc">Explore bus routes, view stops on an interactive map and check estimated arrival information.</p>
+  <div class="eyebrow">SMARTER DAILY COMMUTE</div>
+  <h1>Your bus. Your <span>time.</span></h1>
+  <p>Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
   <div class="actions">
-    <button class="primary" onclick="goTo('student')" data-i18n="studentMode">📍 Student Mode</button>
-    <button onclick="goTo('driver')" data-i18n="driverMode">🧭 Driver Mode</button>
+    <button class="primary" onclick="goTo('student')">📍 Student Mode</button>
+    <button onclick="goTo('driver')">🧭 Driver Mode</button>
   </div>
 </section>
 
@@ -142,250 +277,346 @@ footer{text-align:center;color:var(--muted);padding:25px}
     <section class="panel" id="student">
       <div class="route-row">
         <div>
-          <h2 data-i18n="track">📍 Track Your Bus</h2>
-          <p class="muted" data-i18n="chooseRoute">Choose a route to see its stops on the map.</p>
+          <h2>📍 Track Your Bus</h2>
+          <p class="muted">Choose a route to see its stops on the map.</p>
         </div>
-        <label><span data-i18n="routeLabel">Bus route</span><br>
-          <select id="route">
-            <option value="village" data-i18n="village">Village Route</option>
-            <option value="town" data-i18n="town">Town Route</option>
+        <label>Bus route<br>
+          <select id="route" onchange="changeRoute()">
+            <option value="village">Village Route</option>
+            <option value="town">Town Route</option>
           </select>
         </label>
       </div>
 
       <div id="map"></div>
-      <p id="mapStatus" class="map-note" data-i18n="mapLoading">Loading interactive map...</p>
+      <p id="mapStatus" class="map-note">Loading interactive map…</p>
 
       <div class="stats">
         <div class="stat">
-          <div data-i18n="arrival">Estimated arrival at college</div>
+          <div>Estimated arrival at college</div>
           <div class="big" id="eta">15 minutes</div>
-          <small class="muted" data-i18n="estimateNote">Sample estimate only — not live traffic data.</small>
+          <small class="muted">Sample estimate only — not live traffic data.</small>
         </div>
         <div>
-          <h3 data-i18n="stopsTitle">Route Stops</h3>
+          <h3>Route Stops</h3>
           <ol class="stops" id="stops"></ol>
         </div>
       </div>
 
       <div class="actions">
-        <button class="primary" onclick="showAllStops()" data-i18n="allStops">☷ View All Stops</button>
-        <button onclick="fitRoute()" data-i18n="fitRoute">⛶ Fit Route on Map</button>
+        <button class="primary" onclick="showAllStops()">☷ View All Stops</button>
+        <button onclick="fitRoute()">⛶ Fit Route on Map</button>
       </div>
     </section>
 
     <section class="panel" id="driver">
-      <h2 data-i18n="driverMode">🧭 Driver Mode</h2>
-      <p class="muted" data-i18n="gpsDesc">Test your phone's GPS and display your location on the map.</p>
-      <div class="status" data-i18n="privacy">🔒 Your location is displayed on this device and is not shared.</div>
+      <h2>🧭 Driver Mode</h2>
+      <p class="muted">Test your phone's GPS and display your current location on the map.</p>
+      <div class="status">🔒 Privacy: your location stays on this device. It is not shared with students.</div>
+
       <div class="driver-buttons">
-        <button class="primary" id="startBtn" onclick="startGPS()" data-i18n="startGPS">▶ Start GPS Test</button>
-        <button id="stopBtn" onclick="stopGPS()" data-i18n="stopGPS">■ Stop GPS</button>
+        <button class="primary" id="startBtn" onclick="startGPS()">▶ Start GPS Test</button>
+        <button id="stopBtn" onclick="stopGPS()">■ Stop GPS</button>
       </div>
+
       <div class="status">
-        <span data-i18n="gpsStatusLabel">GPS Status</span><br>
-        <strong id="gpsStatus" data-i18n="gpsNotStarted">GPS not started.</strong>
+        GPS Status<br><strong id="gpsStatus">GPS not started.</strong>
         <div id="coordinates" class="muted"></div>
       </div>
-      <p class="muted" data-i18n="gpsHint">GPS needs location permission and an HTTPS website.</p>
+
+      <p class="muted">GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.</p>
     </section>
   </div>
 
   <section class="features" id="features">
-    <div class="feature"><h3 data-i18n="f1">🗺️ Interactive Map</h3><p data-i18n="f1d">Explore routes and stops on a map.</p></div>
-    <div class="feature"><h3 data-i18n="f2">🔀 Multiple Routes</h3><p data-i18n="f2d">Switch between different routes.</p></div>
-    <div class="feature"><h3 data-i18n="f3">🕒 Arrival Estimate</h3><p data-i18n="f3d">See sample arrival information.</p></div>
-    <div class="feature"><h3 data-i18n="f4">🔐 Privacy First</h3><p data-i18n="f4d">GPS test location is not sent to a server.</p></div>
+    <div class="feature"><h3>🗺️ Interactive Map</h3><p>Explore routes and stops on a real map.</p></div>
+    <div class="feature"><h3>🔀 Multiple Routes</h3><p>Switch between Village and Town routes.</p></div>
+    <div class="feature"><h3>🕒 Arrival Estimate</h3><p>See sample arrival information.</p></div>
+    <div class="feature"><h3>🔐 Privacy First</h3><p>GPS test location is not shared.</p></div>
   </section>
 
   <div class="bottom">
     <section class="info" id="about">
-      <h2 data-i18n="aboutTitle">💡 About BusSaathi</h2>
-      <p class="muted" data-i18n="aboutDesc">BusSaathi is a student project prototype for exploring bus routes and stops.</p>
-      <p class="muted" data-i18n="prototypeNote">Routes and arrival times are examples. No real bus fleet is connected.</p>
+      <h2>💡 About BusSaathi</h2>
+      <p class="muted">BusSaathi is a student project prototype designed to help college students explore transport routes and stops.</p>
+      <p class="muted">Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.</p>
     </section>
     <section class="info" id="developer">
-      <h2 data-i18n="developerTitle">👥 Meet the Developer Group</h2>
-      <p class="boys-logo">THE BOYS GROUP</p>
-      <p class="muted" data-i18n="developerDesc">Student Developers · Computer Science</p>
-      <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener" data-i18n="github">View GitHub Profile ↗</a>
+      <h2>👨‍💻 Meet the Developer</h2>
+      <p><strong style="color:var(--green)">Nitin</strong></p>
+      <p class="flicker-text">The Boys Group</p>
+      <p class="muted">Student Developers · Computer Science</p>
+      <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener">View GitHub Profile ↗</a>
     </section>
   </div>
 </main>
 
-<footer data-i18n="footer">BusSaathi · Student Project Prototype · Not connected to live buses.</footer>
+<footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
 
 <div id="chatbox">
-  <div class="route-row">
-    <strong data-i18n="helpTitle">🚌 BusSaathi Help</strong>
-    <button onclick="toggleChat()">✕</button>
-  </div>
-  <div id="chatMessages">
-    <div class="chatline" data-i18n="welcome">Hello! Ask about routes, stops or GPS.</div>
-  </div>
-  <form class="chat-controls" id="chatForm">
-    <input id="chatInput" data-i18n-placeholder="chatPlaceholder" placeholder="Type your question..." required>
+  <div class="route-row"><strong>🚌 BusSaathi Help</strong><button onclick="toggleChat()">✕</button></div>
+  <div id="chatMessages"><div class="chatline" id="chatWelcome">Namaste! Route, stops ya GPS ke baare mein poochho.</div></div>
+  <form class="chat-controls" onsubmit="sendChat(event)">
+    <input id="chatInput" placeholder="Type your question…" required>
     <button class="primary" type="submit">➤</button>
   </form>
 </div>
-<button id="chatToggle" class="primary" onclick="toggleChat()" data-i18n="chatButton">💬 Bus Help</button>
+<button id="chatToggle" class="primary" onclick="toggleChat()">💬 Bus Help</button>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Map JavaScript -->
+<script
+ src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ crossorigin="">
+</script>
+
 <script>
 "use strict";
 
-const T = {
-en:{
-loading:"Loading BusSaathi...",home:"Home",student:"Student",driver:"Driver",features:"Features",about:"About",developer:"Developer",
-tagline:"SMARTER DAILY COMMUTE",hero:"Your bus. Your time.",heroDesc:"Explore bus routes, view stops on an interactive map and check estimated arrival information.",
-studentMode:"📍 Student Mode",driverMode:"🧭 Driver Mode",track:"📍 Track Your Bus",chooseRoute:"Choose a route to see its stops on the map.",
-routeLabel:"Bus route",village:"Village Route",town:"Town Route",arrival:"Estimated arrival at college",estimateNote:"Sample estimate only — not live traffic data.",
-stopsTitle:"Route Stops",allStops:"☷ View All Stops",fitRoute:"⛶ Fit Route on Map",gpsDesc:"Test your phone's GPS and display your location on the map.",
-privacy:"🔒 Your location is displayed on this device and is not shared.",startGPS:"▶ Start GPS Test",stopGPS:"■ Stop GPS",gpsStatusLabel:"GPS Status",
-gpsNotStarted:"GPS not started.",gpsHint:"GPS needs location permission and an HTTPS website.",f1:"🗺️ Interactive Map",f1d:"Explore routes and stops on a map.",
-f2:"🔀 Multiple Routes",f2d:"Switch between different routes.",f3:"🕒 Arrival Estimate",f3d:"See sample arrival information.",f4:"🔐 Privacy First",f4d:"GPS test location is not sent to a server.",
-aboutTitle:"💡 About BusSaathi",aboutDesc:"BusSaathi is a student project prototype for exploring bus routes and stops.",prototypeNote:"Routes and arrival times are examples. No real bus fleet is connected.",
-developerTitle:"👥 Meet the Developer Group",developerDesc:"Student Developers · Computer Science",github:"View GitHub Profile ↗",
-footer:"BusSaathi · Student Project Prototype · Not connected to live buses.",helpTitle:"🚌 BusSaathi Help",welcome:"Hello! Ask about routes, stops or GPS.",
-chatPlaceholder:"Type your question...",chatButton:"💬 Bus Help",mapLoading:"Loading interactive map...",mapError:"Map unavailable. Check your internet connection.",
-mapReady:"Map powered by OpenStreetMap.",gpsRequest:"Requesting location permission...",gpsActive:"GPS active — location received.",
-gpsUnsupported:"GPS is not supported by this browser.",gpsError:"GPS error: ",gpsStopped:"GPS stopped.",you:"You: ",bot:"BusSaathi: ",
-botDefault:"I'm a demo help bot. Ask about routes, stops or GPS.",botGPS:"Open Driver Mode and press Start GPS Test.",
-botRoute:"Select your route from the dropdown.",botStops:"The route stops are listed under the map.",botTime:"Arrival time is only a sample estimate, not live data.",
-yourLocation:"Your location",sampleTime:"Sample time: ",minutes:" minutes",routePrefix:"Route: "
-},
-hi:{
-loading:"BusSaathi लोड हो रहा है...",home:"होम",student:"विद्यार्थी",driver:"ड्राइवर",features:"फीचर्स",about:"जानकारी",developer:"डेवलपर",
-tagline:"आपके सफर का स्मार्ट साथी",hero:"आपकी बस। आपका समय।",heroDesc:"बस रूट देखें, मैप पर स्टॉप खोजें और आने के अनुमानित समय की जानकारी पाएँ।",
-studentMode:"📍 विद्यार्थी मोड",driverMode:"🧭 ड्राइवर मोड",track:"📍 अपनी बस देखें",chooseRoute:"मैप पर स्टॉप देखने के लिए रूट चुनें।",
-routeLabel:"बस रूट",village:"गाँव वाला रूट",town:"शहर वाला रूट",arrival:"कॉलेज पहुँचने का अनुमानित समय",estimateNote:"यह केवल अनुमान है, लाइव ट्रैफिक डेटा नहीं।",
-stopsTitle:"रूट के स्टॉप",allStops:"☷ सभी स्टॉप देखें",fitRoute:"⛶ पूरा रूट देखें",gpsDesc:"फोन का GPS टेस्ट करें और मैप पर अपनी लोकेशन देखें।",
-privacy:"🔒 आपकी लोकेशन इसी डिवाइस पर दिखाई जाती है, साझा नहीं की जाती।",startGPS:"▶ GPS टेस्ट शुरू करें",stopGPS:"■ GPS बंद करें",gpsStatusLabel:"GPS की स्थिति",
-gpsNotStarted:"GPS शुरू नहीं हुआ है।",gpsHint:"GPS के लिए लोकेशन अनुमति और HTTPS वेबसाइट चाहिए।",f1:"🗺️ इंटरैक्टिव मैप",f1d:"मैप पर रूट और स्टॉप देखें।",
-f2:"🔀 कई रूट",f2d:"अलग-अलग रूट के बीच बदलें।",f3:"🕒 पहुँचने का अनुमान",f3d:"अनुमानित समय देखें।",f4:"🔐 प्राइवेसी पहले",f4d:"GPS लोकेशन सर्वर पर नहीं भेजी जाती।",
-aboutTitle:"💡 BusSaathi के बारे में",aboutDesc:"BusSaathi बस रूट और स्टॉप देखने के लिए बनाया गया स्टूडेंट प्रोजेक्ट है।",prototypeNote:"रूट और समय उदाहरण हैं। कोई असली बस इससे जुड़ी नहीं है।",
-developerTitle:"👥 हमारी डेवलपर टीम",developerDesc:"स्टूडेंट डेवलपर्स · कंप्यूटर साइंस",github:"GitHub प्रोफाइल देखें ↗",
-footer:"BusSaathi · स्टूडेंट प्रोजेक्ट · लाइव बसों से जुड़ा नहीं है।",helpTitle:"🚌 BusSaathi सहायता",welcome:"नमस्ते! रूट, स्टॉप या GPS के बारे में पूछें।",
-chatPlaceholder:"अपना सवाल लिखें...",chatButton:"💬 बस सहायता",mapLoading:"इंटरैक्टिव मैप लोड हो रहा है...",mapError:"मैप उपलब्ध नहीं है। इंटरनेट जाँचें।",
-mapReady:"मैप OpenStreetMap से चलता है।",gpsRequest:"लोकेशन की अनुमति माँगी जा रही है...",gpsActive:"GPS चालू है — लोकेशन मिल गई।",
-gpsUnsupported:"यह ब्राउज़र GPS सपोर्ट नहीं करता।",gpsError:"GPS त्रुटि: ",gpsStopped:"GPS बंद है।",you:"आप: ",bot:"BusSaathi: ",
-botDefault:"मैं डेमो सहायता बॉट हूँ। रूट, स्टॉप या GPS के बारे में पूछें।",botGPS:"ड्राइवर मोड खोलें और GPS टेस्ट शुरू करें दबाएँ।",
-botRoute:"ड्रॉपडाउन से अपना रूट चुनें।",botStops:"मैप के नीचे रूट के स्टॉप दिए गए हैं।",botTime:"आने का समय केवल अनुमान है, लाइव डेटा नहीं।",
-yourLocation:"आपकी लोकेशन",sampleTime:"उदाहरण समय: ",minutes:" मिनट",routePrefix:"रूट: "
-}
+const routeData = {
+  village: {
+    name: "Village Route",
+    eta: "15 minutes",
+    stops: [
+      {name:"Village Stop", time:"08:00", coords:[26.7350,83.3000]},
+      {name:"Main Road", time:"08:10", coords:[26.7380,83.3150]},
+      {name:"College Gate", time:"08:25", coords:[26.7420,83.3300]}
+    ]
+  },
+  town: {
+    name: "Town Route",
+    eta: "20 minutes",
+    stops: [
+      {name:"Town Centre", time:"08:00", coords:[26.7600,83.3700]},
+      {name:"Market Stop", time:"08:10", coords:[26.7500,83.3500]},
+      {name:"College Gate", time:"08:25", coords:[26.7420,83.3300]}
+    ]
+  }
 };
 
-let lang="en",map=null,routeLine=null,markers=[],gpsMarker=null,watchId=null,currentRoute="village";
+let map = null;
+let routeLine = null;
+let stopMarkers = [];
+let gpsMarker = null;
+let watchId = null;
+let currentRoute = "village";
+let selectedLang = "English";
 
-const routes={
-village:{eta:15,stops:[
-{name:{en:"Village Stop",hi:"गाँव का स्टॉप"},time:"08:00",coords:[26.7350,83.3000]},
-{name:{en:"Main Road",hi:"मुख्य सड़क"},time:"08:10",coords:[26.7380,83.3150]},
-{name:{en:"College Gate",hi:"कॉलेज गेट"},time:"08:25",coords:[26.7420,83.3300]}]},
-town:{eta:20,stops:[
-{name:{en:"Town Centre",hi:"शहर का केंद्र"},time:"08:00",coords:[26.7600,83.3700]},
-{name:{en:"Market Stop",hi:"बाजार स्टॉप"},time:"08:10",coords:[26.7500,83.3500]},
-{name:{en:"College Gate",hi:"कॉलेज गेट"},time:"08:25",coords:[26.7420,83.3300]}]}
-};
+// Language Selection Handler
+function selectLanguage(lang) {
+  selectedLang = lang;
+  const modal = document.getElementById("langModal");
+  modal.style.opacity = "0";
+  setTimeout(() => {
+    modal.style.display = "none";
+  }, 400);
 
-function tr(key){return T[lang][key]||T.en[key]||key}
+  // Update text based on language choice if needed
+  const loaderText = document.getElementById("loaderText");
+  const chatWelcome = document.getElementById("chatWelcome");
 
-function changeLanguage(value){
- if(!T[value])return;
- lang=value;
- document.documentElement.lang=lang;
-
- document.querySelectorAll("[data-i18n]").forEach(el=>{
-   const key=el.dataset.i18n;
-   if(T[lang][key])el.textContent=T[lang][key];
- });
- document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
-   const key=el.dataset.i18nPlaceholder;
-   if(T[lang][key])el.placeholder=T[lang][key];
- });
- document.getElementById("heroTitle").textContent=tr("hero");
- document.getElementById("gpsStatus").textContent=watchId!==null?tr("gpsActive"):tr("gpsNotStarted");
- document.getElementById("mapStatus").textContent=map?tr("mapReady"):tr("mapLoading");
- renderRoute();
+  if (lang === "Hindi") {
+    loaderText.textContent = "लाइव बस रूट कनेक्ट किए जा रहे हैं...";
+    chatWelcome.textContent = "नमस्ते! रूट, स्टॉप या जीपीएस के बारे में पूछें।";
+  } else if (lang === "Hinglish") {
+    loaderText.textContent = "Live bus routes connect ho rahe hain...";
+    chatWelcome.textContent = "Namaste! Route, stops ya GPS ke baare mein poochho.";
+  } else {
+    loaderText.textContent = "Connecting Live Bus Routes...";
+    chatWelcome.textContent = "Hello! Ask me about routes, stops, or GPS.";
+  }
 }
 
-function goTo(id){document.getElementById(id).scrollIntoView({behavior:"smooth"})}
-
-function initialiseMap(){
- if(typeof L==="undefined"){
-   document.getElementById("mapStatus").textContent=tr("mapError");
-   return;
- }
- try{
-   map=L.map("map").setView([26.738,83.315],13);
-   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-     maxZoom:19,attribution:"&copy; OpenStreetMap contributors"
-   }).addTo(map);
-   renderRoute();
-   document.getElementById("mapStatus").textContent=tr("mapReady");
-   setTimeout(()=>map&&map.invalidateSize(),300);
- }catch(error){
-   console.error(error);
-   document.getElementById("mapStatus").textContent=tr("mapError");
- }
+function goTo(id) {
+  document.getElementById(id).scrollIntoView({behavior:"smooth"});
 }
 
-function renderRoute(){
- const data=routes[currentRoute];
- document.getElementById("stops").innerHTML=data.stops.map(s=>
-   `<li><strong>${s.name[lang]}</strong><br><span class="muted">${s.time}</span></li>`
- ).join("");
- document.getElementById("eta").textContent=data.eta+tr("minutes");
-
- if(!map||typeof L==="undefined")return;
- if(routeLine)map.removeLayer(routeLine);
- markers.forEach(m=>map.removeLayer(m));
- markers=[];
-
- const points=data.stops.map(s=>s.coords);
- routeLine=L.polyline(points,{color:"#00e9a1",weight:5}).addTo(map);
-
- data.stops.forEach(s=>{
-   const marker=L.marker(s.coords).addTo(map);
-   marker.bindPopup(`<b>${s.name[lang]}</b><br>${tr("sampleTime")}${s.time}`);
-   markers.push(marker);
- });
- fitRoute();
+function setMapStatus(message) {
+  document.getElementById("mapStatus").textContent = message;
 }
 
-document.getElementById("route").addEventListener("change",e=>{
- currentRoute=e.target.value;
- renderRoute();
+function initialiseMap() {
+  const status = document.getElementById("mapStatus");
+
+  if (typeof L === "undefined") {
+    status.textContent = "Map library could not load. Check your internet connection.";
+    return;
+  }
+
+  try {
+    map = L.map("map").setView([26.738,83.315], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    renderRoute();
+    setMapStatus("Map powered by OpenStreetMap and Leaflet.");
+
+    setTimeout(function() {
+      if (map) map.invalidateSize();
+    }, 300);
+  } catch (error) {
+    console.error("Map initialisation error:", error);
+    setMapStatus("Map could not start: " + error.message);
+  }
+}
+
+function renderRoute() {
+  if (!map || typeof L === "undefined") return;
+
+  const data = routeData[currentRoute];
+  const points = data.stops.map(stop => stop.coords);
+
+  if (routeLine) map.removeLayer(routeLine);
+  stopMarkers.forEach(marker => map.removeLayer(marker));
+  stopMarkers = [];
+
+  routeLine = L.polyline(points, {
+    color:"#00c98b",
+    weight:6,
+    opacity:0.95
+  }).addTo(map);
+
+  data.stops.forEach(function(stop) {
+    const marker = L.marker(stop.coords).addTo(map)
+      .bindPopup("<b>" + stop.name + "</b><br>Sample time: " + stop.time);
+    stopMarkers.push(marker);
+  });
+
+  document.getElementById("stops").innerHTML = data.stops.map(function(stop) {
+    return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
+      stop.time + "</span></li>";
+  }).join("");
+
+  document.getElementById("eta").textContent = data.eta;
+  fitRoute();
+}
+
+function changeRoute() {
+  currentRoute = document.getElementById("route").value;
+  renderRoute();
+}
+
+function fitRoute() {
+  if (!map || !routeLine) return;
+  map.fitBounds(routeLine.getBounds(), {padding:[25,25]});
+}
+
+function showAllStops() {
+  const data = routeData[currentRoute];
+  alert(data.name + "\n\n" + data.stops.map((stop, i) => (i + 1) + ". " + stop.name + " — " + stop.time).join("\n"));
+}
+
+function startGPS() {
+  const status = document.getElementById("gpsStatus");
+  const startButton = document.getElementById("startBtn");
+  const coords = document.getElementById("coordinates");
+
+  if (!navigator.geolocation) {
+    status.textContent = "GPS is not supported by this browser.";
+    return;
+  }
+
+  status.textContent = "Requesting location permission…";
+  startButton.disabled = true;
+
+  try {
+    watchId = navigator.geolocation.watchPosition(
+      function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        status.textContent = "GPS active — location received.";
+        coords.textContent = "Latitude: " + lat.toFixed(6) + " | Longitude: " + lng.toFixed(6);
+
+        if (map && typeof L !== "undefined") {
+          if (!gpsMarker) {
+            gpsMarker = L.circleMarker([lat,lng], {
+              radius:9, color:"#ffffff", weight:2,
+              fillColor:"#00e9a1", fillOpacity:1
+            }).addTo(map).bindPopup("Your location");
+          } else {
+            gpsMarker.setLatLng([lat,lng]);
+          }
+          map.setView([lat,lng], 16);
+        }
+        startButton.disabled = false;
+      },
+      function(error) {
+        status.textContent = "GPS error: " + error.message;
+        watchId = null;
+        startButton.disabled = false;
+      },
+      { enableHighAccuracy:true, maximumAge:0, timeout:20000 }
+    );
+  } catch(error) {
+    watchId = null;
+    startButton.disabled = false;
+  }
+}
+
+function stopGPS() {
+  if (watchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  document.getElementById("gpsStatus").textContent = "GPS stopped.";
+  document.getElementById("coordinates").textContent = "";
+  document.getElementById("startBtn").disabled = false;
+}
+
+function toggleChat() {
+  const box = document.getElementById("chatbox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+function sendChat(event) {
+  event.preventDefault();
+  const input = document.getElementById("chatInput");
+  const messages = document.getElementById("chatMessages");
+  const question = input.value.trim().toLowerCase();
+  if (!question) return;
+
+  const userLine = document.createElement("div");
+  userLine.className = "chatline";
+  userLine.textContent = "You: " + input.value;
+  messages.appendChild(userLine);
+
+  let answer = selectedLang === "Hindi" ? "मुख्य डेमो हेल्प बॉट हूँ। रूट, स्टॉप या जीपीएस के बारे में पूछें।" : "Main demo help bot hoon. Route, stops ya GPS ke baare mein poochho.";
+  if (question.includes("gps")) {
+    answer = selectedLang === "Hindi" ? "ड्राइवर मोड में 'Start GPS Test' दबाएं।" : "Driver Mode mein Start GPS Test dabayein.";
+  } else if (question.includes("route")) {
+    answer = selectedLang === "Hindi" ? "रूट ड्रॉपडाउन से चयन करें।" : "Route dropdown se select karein.";
+  }
+
+  const botLine = document.createElement("div");
+  botLine.className = "chatline";
+  botLine.textContent = "BusSaathi: " + answer;
+  messages.appendChild(botLine);
+
+  input.value = "";
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// Automatic Hide Loading Screen after 1.8 seconds guaranteed
+function removePreloader() {
+  const preloader = document.getElementById("preloader");
+  if (preloader) {
+    preloader.classList.add("hide-preloader");
+    setTimeout(function() {
+      preloader.style.display = "none";
+    }, 600);
+  }
+}
+
+window.addEventListener("load", function() {
+  initialiseMap();
+  setTimeout(removePreloader, 1500); // 1.5 seconds delay
 });
 
-function fitRoute(){
- if(map&&routeLine)map.fitBounds(routeLine.getBounds(),{padding:[25,25]});
-}
-
-function showAllStops(){
- const data=routes[currentRoute];
- alert(tr("routePrefix")+tr(currentRoute==="village"?"village":"town")+"\n\n"+
- data.stops.map((s,i)=>(i+1)+". "+s.name[lang]+" — "+s.time).join("\n"));
-}
-
-function startGPS(){
- if(!navigator.geolocation){
-   document.getElementById("gpsStatus").textContent=tr("gpsUnsupported");
-   return;
- }
- if(watchId!==null)return;
- document.getElementById("gpsStatus").textContent=tr("gpsRequest");
- document.getElementById("startBtn").disabled=true;
-
- watchId=navigator.geolocation.watchPosition(position=>{
-   const lat=position.coords.latitude,lng=position.coords.longitude;
-   document.getElementById("gpsStatus").textContent=tr("gpsActive");
-   document.getElementById("coordinates").textContent=
-     "Latitude: "+lat.toFixed(6)+" | Longitude: "+lng.toFixed(6);
-
-   if(map&&typeof L!=="undefined"){
-     if(!gpsMarker){
-       gpsMarker=L.circleMarker([lat,lng],{
-         radius:9,color:"#fff",weight:2,fillColor:"#00e9a1",fillOpacity:1
-       }).addTo(map);
-     }else gpsMarker.se
+// Fallback: Agar kisi karan load event delay ho, tab bhi 3 second me screen khul jayegi
+setTimeout(removePreloader, 3000);
+</script>
+</body>
+</html>
