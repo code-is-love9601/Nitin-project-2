@@ -2,495 +2,554 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#03101d">
-  <title>BusSaathi — Your Journey, Smarter</title>
-  <meta name="description" content="BusSaathi helps college students explore bus routes, stops and estimated arrival times.">
-  <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#04111f">
+<title>BusSaathi | Your Journey, Smarter</title>
+<meta name="description" content="BusSaathi college bus route and arrival information project.">
 
-  <style>
-    :root {
-      --bg: #03101d;
-      --panel: #071a2a;
-      --panel2: #0a2133;
-      --green: #00f5a0;
-      --green2: #00c982;
-      --text: #f4f8ff;
-      --muted: #a8b8c9;
-      --border: rgba(0,245,160,.23);
-      --radius: 20px;
-    }
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: 85px; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-    a { color: inherit; text-decoration: none; }
-    button, input, select { font: inherit; }
-    button { cursor: pointer; }
-    .container { width: min(1180px, 92%); margin: auto; }
-
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: rgba(3,16,29,.94);
-      backdrop-filter: blur(18px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-inner {
-      min-height: 72px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 18px;
-    }
-    .logo {
-      font-size: 25px;
-      font-weight: 850;
-      letter-spacing: -1px;
-      white-space: nowrap;
-    }
-    .logo span { color: var(--green); }
-    .logo-icon { color: var(--green); margin-right: 7px; }
-    .nav-links { display: flex; gap: 28px; align-items: center; }
-    .nav-links a { font-size: 14px; color: #d7e1ed; transition: .2s; }
-    .nav-links a:hover { color: var(--green); }
-    .demo-tag {
-      color: var(--green);
-      border: 1px solid var(--green);
-      border-radius: 30px;
-      padding: 7px 13px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .hero {
-      position: relative;
-      overflow: hidden;
-      border-bottom: 1px solid var(--border);
-      background:
-        radial-gradient(ellipse at 78% 30%, rgba(0,245,160,.14), transparent 34%),
-        radial-gradient(ellipse at 10% 20%, rgba(15,85,155,.22), transparent 45%),
-        linear-gradient(115deg, #03101d 25%, #062337 100%);
-    }
-    .hero-grid {
-      min-height: 470px;
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      align-items: center;
-      gap: 20px;
-      padding-top: 42px;
-      padding-bottom: 42px;
-    }
-    .eyebrow {
-      display: inline-block;
-      color: var(--green);
-      border: 1px solid var(--border);
-      background: rgba(0,245,160,.07);
-      border-radius: 30px;
-      padding: 5px 13px;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      margin-bottom: 18px;
-    }
-    h1 {
-      font-size: clamp(43px, 6vw, 70px);
-      line-height: 1.02;
-      letter-spacing: -2.5px;
-      margin-bottom: 18px;
-    }
-    h1 span, .section-title span { color: var(--green); }
-    .hero-copy { color: var(--muted); max-width: 540px; font-size: 16px; }
-    .search-row { display: flex; gap: 10px; margin-top: 25px; max-width: 540px; }
-    .route-select {
-      min-width: 0;
-      flex: 1;
-      color: var(--text);
-      background: #0a2031;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 13px;
-      outline: none;
-    }
-    .route-select:focus, input:focus { border-color: var(--green); }
-    .btn {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 19px;
-      border-radius: 12px;
-      border: 1px solid var(--green);
-      color: #00160e;
-      background: var(--green);
-      font-weight: 800;
-      transition: .2s;
-    }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(0,245,160,.22); }
-    .btn-outline { color: var(--green); background: transparent; }
-    .hero-stats { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 25px; }
-    .hero-stats div { color: #d6e3ee; font-size: 12px; }
-    .hero-stats strong { display: block; color: var(--green); font-size: 14px; }
-
-    .hero-art {
-      min-height: 330px;
-      display: grid;
-      place-items: center;
-      position: relative;
-      isolation: isolate;
-    }
-    .hero-art::before {
-      content: "";
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      border-radius: 50%;
-      background: rgba(0,245,160,.12);
-      filter: blur(65px);
-      z-index: -1;
-    }
-    .bus-illustration {
-      width: min(100%, 490px);
-      filter: drop-shadow(0 20px 35px rgba(0,0,0,.5));
-      animation: float 4s ease-in-out infinite;
-    }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    .art-caption {
-      position: absolute;
-      bottom: 7px;
-      right: 8px;
-      color: var(--green);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: rgba(3,16,29,.78);
-      padding: 10px 15px;
-      font-size: 12px;
-    }
-
-    section { padding: 36px 0; }
-    .section-title { font-size: clamp(25px, 4vw, 34px); letter-spacing: -.8px; margin-bottom: 5px; }
-    .section-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 23px; }
-    .title-line { width: 48px; height: 4px; background: var(--green); border-radius: 5px; margin: 10px 0 22px; }
-
-    .feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-    .feature-card {
-      padding: 23px 17px;
-      background: linear-gradient(145deg, #071b2b, #041321);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      transition: .25s;
-    }
-    .feature-card:hover { transform: translateY(-4px); border-color: var(--green); }
-    .feature-icon { font-size: 30px; color: var(--green); margin-bottom: 10px; }
-    .feature-card h3 { font-size: 16px; margin-bottom: 7px; }
-    .feature-card p { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
-    .text-link { color: var(--green); font-size: 13px; font-weight: 800; }
-
-    .tracking-layout {
-      display: grid;
-      grid-template-columns: 300px minmax(0,1fr);
-      gap: 17px;
-      padding: 18px;
-      border: 1px solid var(--green);
-      border-radius: 22px;
-      background: linear-gradient(145deg, #071b2b, #03101d);
-      box-shadow: 0 0 25px rgba(0,245,160,.07);
-    }
-    .tracking-sidebar h3 { font-size: 21px; }
-    .tracking-sidebar .muted { color: var(--muted); font-size: 13px; margin: 3px 0 18px; }
-    .tracking-sidebar label { display: block; font-size: 13px; margin-bottom: 7px; color: #d7e5ef; }
-    .tracking-sidebar select {
-      width: 100%;
-      padding: 12px;
-      background: #0b2132;
-      color: white;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-bottom: 14px;
-    }
-    .eta-card {
-      background: rgba(0,245,160,.08);
-      border: 1px solid var(--green);
-      padding: 13px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
-    .eta-card small { color: var(--green); font-weight: 800; display: block; }
-    .eta-number { font-size: 25px; font-weight: 850; line-height: 1.5; }
-    .eta-card p { font-size: 11px; color: var(--muted); }
-    .stops-title { margin-bottom: 9px; font-size: 14px; }
-    .stop { border-left: 2px solid rgba(0,245,160,.5); margin-left: 7px; padding: 0 0 13px 15px; position: relative; }
-    .stop::before {
-      content: "";
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--green);
-      left: -6px;
-      top: 7px;
-    }
-    .stop:last-child { border-left-color: transparent; }
-    .stop strong { display: block; font-size: 13px; }
-    .stop span { color: var(--muted); font-size: 12px; }
-    #map { min-height: 430px; width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid #345167; }
-    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #071a2a; color: white; }
-    .leaflet-control-zoom a { background: #071a2a !important; color: var(--green) !important; border-color: #345167 !important; }
-    .map-note { color: var(--muted); font-size: 11px; margin-top: 8px; }
-
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 16px; }
-    .info-card {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 19px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: #061827;
-    }
-    .info-card .big-icon { font-size: 29px; color: var(--green); }
-    .info-card h3 { font-size: 15px; }
-    .info-card p { color: var(--muted); font-size: 12px; }
-    .info-card a { margin-left: auto; color: var(--green); font-size: 20px; }
-
-    .driver-panel {
-      display: none;
-      margin-top: 16px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--panel);
-    }
-    .driver-panel p { color: var(--muted); font-size: 13px; margin: 8px 0 14px; }
-
-    .developer {
-      display: grid;
-      grid-template-columns: .9fr 1.5fr;
-      gap: 20px;
-      align-items: center;
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background:
-        radial-gradient(ellipse at 90% 0%, rgba(0,245,160,.09), transparent 45%),
-        #061827;
-    }
-    .developer-main { display: flex; align-items: center; gap: 16px; }
-    .avatar {
-      width: 82px;
-      height: 82px;
-      flex-shrink: 0;
-      border: 2px solid var(--green);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      color: var(--green);
-      font-size: 32px;
-      font-weight: 900;
-      box-shadow: 0 0 20px rgba(0,245,160,.14);
-    }
-    .developer h3 { font-size: 26px; }
-    .developer h3 span { color: var(--green); }
-    .developer p { color: var(--muted); font-size: 13px; }
-    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
-    .chip { border: 1px solid var(--border); border-radius: 20px; padding: 4px 9px; color: var(--green); font-size: 11px; }
-    .developer-about { border-left: 1px solid var(--border); padding-left: 22px; }
-    .developer-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-    .developer-actions .btn { padding: 9px 13px; font-size: 12px; }
-
-    footer { border-top: 1px solid var(--border); padding: 20px 0; margin-top: 8px; }
-    .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
-    footer p { color: var(--muted); font-size: 12px; }
-    footer .logo { font-size: 20px; }
-
-    .chat-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1200;
-      border: 1px solid var(--green);
-      border-radius: 30px;
-      padding: 12px 17px;
-      background: var(--green);
-      color: #00160e;
-      font-weight: 850;
-      box-shadow: 0 0 25px rgba(0,245,160,.2);
-    }
-    .chat-panel {
-      display: none;
-      position: fixed;
-      z-index: 1200;
-      right: 20px;
-      bottom: 80px;
-      width: min(340px, calc(100vw - 30px));
-      height: 420px;
-      background: #061827;
-      border: 1px solid var(--green);
-      border-radius: 17px;
-      overflow: hidden;
-      box-shadow: 0 15px 55px rgba(0,0,0,.55);
-    }
-    .chat-header { background: #092337; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
-    .chat-header strong { color: var(--green); }
-    .chat-header button { color: white; border: 0; background: transparent; font-size: 22px; }
-    .chat-messages { height: 300px; overflow-y: auto; padding: 12px; }
-    .message { font-size: 12px; padding: 10px 12px; border-radius: 12px; margin-bottom: 9px; max-width: 90%; white-space: pre-wrap; }
-    .bot-message { background: #102c40; border: 1px solid #23485e; }
-    .user-message { background: rgba(0,245,160,.13); border: 1px solid var(--border); margin-left: auto; }
-    .chat-input-row { display: flex; gap: 7px; padding: 10px; border-top: 1px solid var(--border); }
-    .chat-input-row input { flex: 1; min-width: 0; background: #0b2132; color: white; border: 1px solid #315066; border-radius: 9px; padding: 9px; outline: none; font-size: 12px; }
-    .chat-input-row button { background: var(--green); border: 0; border-radius: 9px; padding: 0 14px; font-weight: 900; }
-
-    @media (max-width: 850px) {
-      .nav-links { gap: 13px; }
-      .nav-links a { font-size: 12px; }
-      .hero-grid { grid-template-columns: 1fr; padding-top: 36px; }
-      .hero-art { min-height: 260px; }
-      .bus-illustration { max-width: 440px; }
-      .feature-grid { grid-template-columns: repeat(2, 1fr); }
-      .tracking-layout { grid-template-columns: 1fr; }
-      #map { min-height: 350px; }
-      .developer { grid-template-columns: 1fr; }
-      .developer-about { border-left: 0; border-top: 1px solid var(--border); padding: 18px 0 0; }
-    }
-    @media (max-width: 560px) {
-      .nav-inner { padding: 12px 0; flex-wrap: wrap; }
-      .logo { font-size: 22px; }
-      .nav-links { order: 3; width: 100%; justify-content: space-between; gap: 8px; }
-      .nav-links a { font-size: 12px; }
-      .demo-tag { font-size: 10px; }
-      h1 { letter-spacing: -1.5px; }
-      .hero-grid { padding-top: 30px; padding-bottom: 25px; }
-      .search-row { flex-direction: column; }
-      .search-row .btn { width: 100%; }
-      .hero-stats { gap: 12px 20px; }
-      section { padding: 28px 0; }
-      .feature-grid { gap: 10px; }
-      .feature-card { padding: 16px 12px; }
-      .feature-card h3 { font-size: 14px; }
-      .feature-card p { font-size: 12px; }
-      .tracking-layout { padding: 12px; }
-      #map { min-height: 300px; }
-      .info-grid { grid-template-columns: 1fr; }
-      .developer { padding: 18px; }
-      .developer-main { align-items: flex-start; }
-      .avatar { width: 60px; height: 60px; font-size: 25px; }
-      .developer h3 { font-size: 23px; }
-      .footer-inner { justify-content: center; text-align: center; }
-      .chat-toggle { right: 13px; bottom: 13px; }
-      .chat-panel { right: 10px; bottom: 72px; }
-    }
-  </style>
+<style>
+:root{
+  --bg:#04111f;
+  --panel:#091c2c;
+  --panel2:#0d2638;
+  --green:#00f5a0;
+  --green-dark:#00c982;
+  --text:#f3f8ff;
+  --muted:#a7b8c9;
+  --border:rgba(0,245,160,.23);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+}
+button,select,input{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.container{width:min(1120px,92%);margin:auto}
+header{
+  position:sticky;top:0;z-index:1000;
+  background:rgba(4,17,31,.95);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav{
+  min-height:72px;display:flex;align-items:center;
+  justify-content:space-between;gap:15px;flex-wrap:wrap;
+}
+.logo{font-size:24px;font-weight:900;letter-spacing:-1px}
+.logo span{color:var(--green)}
+.nav-links{display:flex;gap:20px;flex-wrap:wrap}
+.nav-links a{font-size:13px;color:#d6e3ef}
+.nav-links a:hover{color:var(--green)}
+.tag{
+  font-size:11px;color:var(--green);
+  border:1px solid var(--green);
+  border-radius:30px;padding:6px 10px;
+}
+.hero{
+  background:
+    radial-gradient(ellipse at 80% 20%,rgba(0,245,160,.13),transparent 35%),
+    radial-gradient(ellipse at 10% 30%,rgba(18,90,160,.2),transparent 45%),
+    var(--bg);
+  border-bottom:1px solid var(--border);
+}
+.hero-inner{
+  min-height:390px;display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:20px;align-items:center;padding:45px 0;
+}
+.eyebrow{
+  color:var(--green);font-size:12px;
+  font-weight:bold;letter-spacing:1.5px;
+}
+h1{
+  font-size:clamp(42px,6vw,68px);
+  line-height:1.04;letter-spacing:-2px;margin:15px 0;
+}
+h1 span,.section-title span{color:var(--green)}
+p{color:var(--muted);line-height:1.7}
+.hero p{max-width:550px}
+.hero-art{
+  display:grid;place-items:center;min-height:250px;
+  color:var(--green);font-size:130px;
+  text-shadow:0 0 45px rgba(0,245,160,.28);
+}
+.hero-art small{
+  display:block;font-size:13px;text-align:center;
+  color:var(--muted);text-shadow:none;letter-spacing:2px;
+}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.btn{
+  border:1px solid var(--green);
+  border-radius:11px;padding:12px 16px;
+  background:var(--green);color:#03170f;
+  font-weight:bold;transition:.2s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 20px #00f5a033}
+.btn.secondary{background:transparent;color:var(--green)}
+.btn.light{background:var(--panel2);color:var(--text);border-color:var(--border)}
+section{padding:32px 0}
+.section-title{font-size:30px;margin:0}
+.section-subtitle{font-size:13px;margin:5px 0 20px}
+.line{width:45px;height:4px;background:var(--green);border-radius:5px;margin:10px 0 18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{
+  background:linear-gradient(145deg,var(--panel),#061522);
+  border:1px solid var(--border);
+  border-radius:18px;padding:20px;
+  min-width:0;
+}
+.card h2{font-size:20px;margin:5px 0}
+.icon{font-size:29px;color:var(--green)}
+.card p{font-size:13px}
+label{display:block;font-size:13px;margin-top:12px;color:#d9e7f3}
+select,input{
+  width:100%;padding:12px;border-radius:10px;
+  color:var(--text);background:#0b2132;
+  border:1px solid #294558;outline:none;
+}
+select:focus,input:focus{border-color:var(--green)}
+.map-wrap{margin-top:15px}
+#map{
+  height:300px;width:100%;border-radius:13px;
+  border:1px solid var(--border);z-index:1;
+}
+.note{font-size:11px!important;color:#91a5b7}
+.eta{
+  background:rgba(0,245,160,.08);
+  border:1px solid var(--border);
+  border-radius:13px;padding:14px;margin:14px 0;
+}
+.eta strong{font-size:28px;color:var(--green);display:block}
+.stop{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:12px 0;border-bottom:1px solid #193247;
+}
+.stop:last-child{border-bottom:0}
+.stop-icon{color:var(--green);font-size:17px}
+.stop b{display:block;font-size:14px}
+.stop small{color:var(--muted);font-size:12px}
+.feature-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.feature{padding:17px;border-radius:15px;background:var(--panel);border:1px solid var(--border)}
+.feature .icon{font-size:25px}
+.feature h3{font-size:15px;margin:8px 0}
+.feature p{font-size:12px;margin-bottom:0}
+.notice{
+  overflow-wrap:anywhere;font-size:12px;
+  padding:10px;border-radius:10px;background:#0b2132;
+}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.info-grid .card{display:flex;gap:12px;align-items:flex-start}
+.info-grid .card .icon{flex-shrink:0}
+.driver-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.driver-tools button{flex:1;min-width:120px}
+.developer{
+  display:grid;grid-template-columns:auto 1fr;
+  gap:18px;align-items:center;
+  background:radial-gradient(ellipse at 90% 10%,rgba(0,245,160,.1),transparent 45%),var(--panel);
+  border:1px solid var(--border);border-radius:18px;padding:22px;
+}
+.avatar{
+  width:80px;height:80px;border-radius:50%;
+  display:grid;place-items:center;font-size:30px;font-weight:bold;
+  color:var(--green);border:2px solid var(--green);
+  background:#0b2636;box-shadow:0 0 22px #00f5a022;
+}
+.developer h2{font-size:26px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip{font-size:11px;color:var(--green);border:1px solid var(--border);border-radius:20px;padding:4px 9px}
+footer{border-top:1px solid var(--border);padding:22px 0;text-align:center}
+footer p{font-size:12px;margin:5px}
+.chat-toggle{
+  position:fixed;right:18px;bottom:18px;z-index:1500;
+  background:var(--green);color:#03170f;
+  border:0;border-radius:30px;padding:13px 18px;
+  font-weight:bold;box-shadow:0 0 24px #00f5a033;
+}
+.chat-panel{
+  display:none;position:fixed;right:18px;bottom:78px;
+  width:min(340px,calc(100vw - 28px));height:410px;
+  background:var(--panel);border:1px solid var(--green);
+  border-radius:16px;z-index:1500;overflow:hidden;
+  box-shadow:0 15px 50px #0009;
+}
+.chat-head{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--panel2);padding:12px;
+}
+.chat-head strong{color:var(--green)}
+.chat-head button{background:none;color:white;border:0;font-size:22px}
+.chat-messages{height:300px;overflow-y:auto;padding:12px}
+.message{
+  padding:9px 11px;border-radius:11px;font-size:12px;
+  margin-bottom:9px;max-width:90%;overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
+.bot{background:#102d41;border:1px solid #24475c}
+.user{background:#063e32;border:1px solid var(--border);margin-left:auto}
+.chat-form{display:flex;gap:6px;padding:9px;border-top:1px solid var(--border)}
+.chat-form input{min-width:0}
+.chat-form button{background:var(--green);color:#03170f;border:0;border-radius:9px;padding:0 14px;font-weight:bold}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#091c2c;color:white}
+.leaflet-control-zoom a{background:#091c2c!important;color:var(--green)!important;border-color:#294558!important}
+@media(max-width:800px){
+  .hero-inner{grid-template-columns:1fr;padding:32px 0}
+  .hero-art{min-height:130px;font-size:90px}
+  .feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nav-links{gap:12px}
+}
+@media(max-width:560px){
+  .nav{padding:12px 0}
+  .nav-links{width:100%;justify-content:space-between;gap:7px}
+  .nav-links a{font-size:11px}
+  .tag{font-size:9px}
+  h1{font-size:43px}
+  .grid,.info-grid{grid-template-columns:1fr}
+  .feature-grid{gap:9px}
+  .feature{padding:13px}
+  .card{padding:16px}
+  #map{height:270px}
+  .developer{grid-template-columns:1fr}
+  .chat-toggle{right:12px;bottom:12px}
+  .chat-panel{right:10px;bottom:70px}
+}
+</style>
 </head>
 
 <body>
-  <header class="navbar">
-    <div class="container nav-inner">
-      <a class="logo" href="#home"><span class="logo-icon">▣</span>Bus<span>Saathi</span></a>
-      <nav class="nav-links" aria-label="Main navigation">
-        <a href="#home">Home</a>
-        <a href="#track">Track Bus</a>
-        <a href="#features">Features</a>
-        <a href="#about">About</a>
-        <a href="#developer">Developer</a>
-      </nav>
-      <span class="demo-tag">● PROJECT DEMO</span>
-    </div>
-  </header>
+<header>
+  <div class="container nav">
+    <a class="logo" href="#home">🚌 Bus<span>Saathi</span></a>
+    <nav class="nav-links">
+      <a href="#home">Home</a>
+      <a href="#student">Student</a>
+      <a href="#driver">Driver</a>
+      <a href="#features">Features</a>
+      <a href="#developer">Developer</a>
+    </nav>
+    <span class="tag">● PROJECT DEMO</span>
+  </div>
+</header>
 
-  <main>
-    <section class="hero" id="home">
-      <div class="container hero-grid">
-        <div>
-          <span class="eyebrow">SMART COLLEGE COMMUTE</span>
-          <h1>Your Journey,<br><span>Smarter.</span></h1>
-          <p class="hero-copy">
-            Explore your college bus routes, check stops on the map
-            and view estimated arrival times — all in one place.
-          </p>
-
-          <div class="search-row">
-            <select class="route-select" id="heroRoute" aria-label="Select bus route">
-              <option value="village">⌁ &nbsp; Village Route</option>
-              <option value="town">⌁ &nbsp; Town Route</option>
-            </select>
-            <button class="btn" id="heroTrackBtn">Track Bus →</button>
-          </div>
-
-          <div class="hero-stats">
-            <div><strong>⌖ Route Map</strong>Explore bus stops</div>
-            <div><strong>◷ ETA Updates</strong>Sample estimates</div>
-            <div><strong>◇ Student First</strong>Simple and useful</div>
-          </div>
-        </div>
-
-        <div class="hero-art" aria-label="BusSaathi college bus illustration">
-          <svg class="bus-illustration" viewBox="0 0 560 340" role="img" aria-label="Illustration of a green college bus">
-            <defs>
-              <linearGradient id="busBody" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#00f5a0"/>
-                <stop offset=".55" stop-color="#00b97c"/>
-                <stop offset="1" stop-color="#087b64"/>
-              </linearGradient>
-              <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
-                <stop stop-color="#173e57"/>
-                <stop offset="1" stop-color="#061321"/>
-              </linearGradient>
-            </defs>
-            <ellipse cx="280" cy="295" rx="220" ry="24" fill="#000" opacity=".45"/>
-            <path d="M88 83 Q88 57 119 57 L392 57 Q427 57 445 94 L489 187 L489 250 Q489 270 465 276 L105 276 Q79 271 79 247 L79 113 Q79 94 88 83Z" fill="url(#busBody)" stroke="#5dffd0" stroke-width="2"/>
-            <path d="M106 77 L387 77 Q407 77 421 100 L445 145 L105 145Z" fill="url(#glass)" stroke="#17485b" stroke-width="3"/>
-            <path d="M120 87 L185 87 L185 135 L120 135Z" fill="#102e44"/>
-            <path d="M193 87 L260 87 L260 135 L193 135Z" fill="#102e44"/>
-            <path d="M268 87 L335 87 L335 135 L268 135Z" fill="#102e44"/>
-            <path d="M343 87 L383 87 Q399 87 410 107 L426 135 L343 135Z" fill="#102e44"/>
-            <path d="M442 155 L466 196 L466 244 L442 244Z" fill="#061827" stroke="#15394b" stroke-width="3"/>
-            <path d="M107 157 L429 157 L429 244 L107 244Z" fill="#087d62" opacity=".7"/>
-            <path d="M185 157 L185 243 M264 157 L264 243 M343 157 L343 243" stroke="#73ffd1" stroke-width="2" opacity=".65"/>
-            <path d="M107 253 L467 253" stroke="#003b37" stroke-width="8"/>
-            <rect x="118" y="168" width="56" height="46" rx="5" fill="#0b2939" stroke="#72ffcf"/>
-            <text x="146" y="187" fill="#00f5a0" font-size="10" font-weight="bold" text-anchor="middle">BUS</text>
-            <text x="146" y="202" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">SAATHI</text>
-            <rect x="416" y="211" width="32" height="19" rx="4" fill="#fff3b0"/>
-            <rect x="451" y="211" width="22" height="19" rx="4" fill="#ffbf62"/>
-            <rect x="88" y="215" width="15" height="30" rx="4" fill="#ff4646"/>
-            <circle cx="160" cy="272" r="30" fill="#06101a" stroke="#203b4c" stroke-width="5"/>
-            <circle cx="160" cy="272" r="14" fill="#8da3b4"/>
-            <circle cx="160" cy="272" r="5" fill="#0b2130"/>
-            <circle cx="405" cy="272" r="30" fill="#06101a" stroke="#203b4c" stroke-width="5"/>
-            <circle cx="405" cy="272" r="14" fill="#8da3b4"/>
-            <circle cx="405" cy="272" r="5" fill="#0b2130"/>
-            <path d="M226 26 L324 26" stroke="#00f5a0" stroke-width="2" stroke-dasharray="5 5"/>
-            <text x="275" y="18" text-anchor="middle" fill="#b7ffe6" font-size="13" font-weight="bold">BETTER ROUTES · BETTER DAYS</text>
-            <rect x="200" y="99" width="130" height="28" rx="7" fill="#041523" stroke="#00f5a0"/>
-            <text x="265" y="118" fill="#00f5a0" font-size="17" font-weight="bold" text-anchor="middle">BusSaathi</text>
-          </svg>
-          <div class="art-caption">✦ Smarter college journeys</div>
+<main>
+  <section class="hero" id="home">
+    <div class="container hero-inner">
+      <div>
+        <div class="eyebrow">SMARTER DAILY COMMUTE</div>
+        <h1>Your bus.<br><span>Your time.</span></h1>
+        <p>Explore your college bus routes, check the stops on an interactive map and view estimated arrival times — all in one place.</p>
+        <div class="actions">
+          <button class="btn" onclick="studentMode()">📍 Student Mode</button>
+          <button class="btn secondary" onclick="driverMode()">🧭 Driver Mode</button>
         </div>
       </div>
-    </section>
+      <div class="hero-art">
+        🚌
+        <small>YOUR JOURNEY, SMARTER</small>
+      </div>
+    </div>
+  </section>
 
-    <section id="features">
-      <div class="container">
-        <h2 class="section-title">Explore Our <span>Features</span></h2>
-        <div class="title-line"></div>
-        <p class="section-subtitle">Everything you need for a simpler college commute.</p>
+  <section id="features">
+    <div class="container">
+      <h2 class="section-title">Made for your <span style="color:var(--green)">journey</span></h2>
+      <div class="line"></div>
+      <p class="section-subtitle">Helpful tools for a simpler college commute.</p>
+      <div class="feature-grid">
+        <article class="feature">
+          <div class="icon">⌖</div>
+          <h3>Interactive Map</h3>
+          <p>View the sample route and its stops on a geographic map.</p>
+        </article>
+        <article class="feature">
+          <div class="icon">↗</div>
+          <h3>Two Routes</h3>
+          <p>Switch between Village Route and Town Route.</p>
+        </article>
+        <article class="feature">
+          <div class="icon">◷</div>
+          <h3>ETA Estimate</h3>
+          <p>See the demo arrival estimate for your chosen route.</p>
+        </article>
+        <article class="feature">
+          <div class="icon">♙</div>
+          <h3>GPS Test</h3>
+          <p>Test your own device's location with your permission.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 
-        <div class="feature-grid">
-          <article class="feature-card">
-            <div class="feature-icon">⌖</div>
-            <h3>Track Your Bus</h3>
-            <p>Explore the selected route and its stops on an interactive map.</p>
-            <a class="text-link" href="#track">View Map →</a>
-          </article>
-          <article class="feature-car
+  <section id="student">
+    <div class="container">
+      <h2 class="section-title">Track Your <span>Bus</span></h2>
+      <p class="section-subtitle">Choose a sample route to see its stops and map.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="icon">📍</div>
+          <h2>Route Explorer</h2>
+          <p>Select a route to update the map, stops and arrival estimate.</p>
+
+          <label for="route">Select bus route</label>
+          <select id="route" onchange="changeRoute()">
+            <option value="village">Village Route</option>
+            <option value="town">Town Route</option>
+          </select>
+
+          <div class="map-wrap">
+            <div id="map" aria-label="Interactive sample route map"></div>
+          </div>
+          <p class="note">Map lines and coordinates are illustrative demo data, not the actual bus route or live location.</p>
+
+          <div class="eta">
+            <div>Estimated arrival at college</div>
+            <strong id="eta">15 minutes</strong>
+            <div class="note" id="etaNote">Sample estimate only · Not live traffic data</div>
+          </div>
+
+          <h2>Route Stops</h2>
+          <div id="stops">
+            <div class="stop"><span class="stop-icon">●</span><div><b>Village Stop</b><small>Route start · 08:00</small></div></div>
+            <div class="stop"><span class="stop-icon">●</span><div><b>Main Road</b><small>Pickup point · 08:10</small></div></div>
+            <div class="stop"><span class="stop-icon">🏫</span><div><b>College Gate</b><small>Destination · 08:25</small></div></div>
+          </div>
+          <div class="actions">
+            <button class="btn secondary" onclick="showStops()">View All Stops</button>
+            <button class="btn light" onclick="fitRoute()">Fit Route on Map</button>
+          </div>
+        </div>
+
+        <div class="card" id="driver">
+          <div class="icon">🧭</div>
+          <h2>Driver Mode</h2>
+          <p>Test your phone's GPS permission. This demo does not send or share your location with students.</p>
+          <div class="eta">
+            <strong style="font-size:18px">GPS Device Test</strong>
+            <p>Allow location access when your browser asks.</p>
+          </div>
+          <div class="driver-tools">
+            <button class="btn" id="start" onclick="startGPS()">Start GPS</button>
+            <button class="btn secondary" onclick="stopGPS()">Stop GPS</button>
+          </div>
+          <p class="notice" id="notice" role="status">GPS not started.</p>
+          <p class="note">Real tracking requires secure driver authentication, a backend database and authorised location sharing. These are not connected in this demo.</p>
+          <div class="actions">
+            <button class="btn light" onclick="studentMode()">← Back to Student Mode</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="icon">⏱️</div>
+          <h2>Arrival Information</h2>
+          <p>See the estimated time for the selected sample route.</p>
+          <div class="eta">
+            <div>Selected route ETA</div>
+            <strong id="etaCopy">15 minutes</strong>
+            <div class="note">Illustrative estimate only</div>
+          </div>
+          <p class="note">A real ETA system should use actual bus location and route/traffic information.</p>
+        </div>
+
+        <div class="card">
+          <div class="icon">🔒</div>
+          <h2>Privacy First</h2>
+          <p>Location access is requested only when you press Start GPS. Your location is displayed locally and is not sent to a server.</p>
+          <p class="note">Do not use demo coordinates as actual college bus directions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="container">
+      <h2 class="section-title">About <span>BusSaathi</span></h2>
+      <div class="line"></div>
+      <div class="card">
+        <p>BusSaathi is a student project prototype designed to make college transport information easier to explore. Students can switch routes, inspect sample stops, view illustrative ETA information and use the help chatbot.</p>
+        <p class="note">The current version is a demonstration. It does not connect to a real bus, transport office or live tracking database.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="developer">
+    <div class="container">
+      <h2 class="section-title">Meet the <span>Developer</span></h2>
+      <p class="section-subtitle">The student building BusSaathi.</p>
+      <div class="developer">
+        <div class="avatar">N</div>
+        <div>
+          <div class="eyebrow">BUSSAATHI CREATOR</div>
+          <h2>Nitin<span style="color:var(--green)">.</span></h2>
+          <p>Student Developer · Computer Science</p>
+          <div class="chips">
+            <span class="chip">Web Development</span>
+            <span class="chip">Problem Solving</span>
+            <span class="chip">Learning by Building</span>
+          </div>
+          <div class="actions">
+            <a class="btn" href="https://github.com/code-is-love9601" target="_blank" rel="noopener noreferrer">⌘ GitHub Profile</a>
+            <a class="btn secondary" href="mailto:nitint3x9601@gmail.com">✉ Contact Developer</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <a class="logo" href="#home">🚌 Bus<span>Saathi</span></a>
+    <p>Student Project Prototype · Live bus tracking not connected</p>
+    <p>Built with 💚 by Nitin · © <span id="year"></span></p>
+  </div>
+</footer>
+
+<button class="chat-toggle" id="chatToggle" onclick="toggleChat()" aria-expanded="false">✦ Bus Help</button>
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="BusSaathi help chatbot">
+  <div class="chat-head">
+    <strong>✦ BusSaathi Help</strong>
+    <button type="button" onclick="toggleChat()" aria-label="Close chat">×</button>
+  </div>
+  <div class="chat-messages" id="chatMessages" aria-live="polite">
+    <div class="message bot">Namaste! 👋 Main BusSaathi Help hoon. Route, stops, ETA ya GPS ke baare mein poochho.</div>
+  </div>
+  <form class="chat-form" id="chatForm">
+    <input id="chatInput" type="text" placeholder="Apna sawal likho..." autocomplete="off" required>
+    <button type="submit">➤</button>
+  </form>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+"use strict";
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+const routeData = {
+  village: {
+    name: "Village Route",
+    eta: 15,
+    stops: [
+      { name: "Village Stop", time: "Route start · 08:00", point: [26.735, 83.300] },
+      { name: "Main Road", time: "Pickup point · 08:10", point: [26.750, 83.350] },
+      { name: "College Gate", time: "Destination · 08:25", point: [26.775, 83.390] }
+    ]
+  },
+  town: {
+    name: "Town Route",
+    eta: 9,
+    stops: [
+      { name: "Town Bus Stand", time: "Route start · 08:12", point: [26.745, 83.330] },
+      { name: "Market Crossing", time: "Pickup point · 08:18", point: [26.760, 83.360] },
+      { name: "College Gate", time: "Destination · 08:27", point: [26.775, 83.390] }
+    ]
+  }
+};
+
+let map = null;
+let routeLine = null;
+let stopMarkers = [];
+let gpsMarker = null;
+let watchId = null;
+let currentRoute = "village";
+
+function studentMode() {
+  document.getElementById("student").scrollIntoView({ behavior: "smooth" });
+  if (map) setTimeout(() => map.invalidateSize(), 300);
+}
+
+function driverMode() {
+  document.getElementById("driver").scrollIntoView({ behavior: "smooth" });
+}
+
+function initialiseMap() {
+  if (typeof L === "undefined") {
+    document.getElementById("map").innerHTML =
+      '<p style="padding:20px">Map library load nahi hui. Internet connection check karke page refresh karo.</p>';
+    return;
+  }
+
+  map = L.map("map").setView(routeData.village.stops[1].point, 12);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  renderRoute(currentRoute);
+}
+
+function renderRoute(routeKey) {
+  if (!routeData[routeKey]) return;
+
+  currentRoute = routeKey;
+  const data = routeData[routeKey];
+
+  document.getElementById("route").value = routeKey;
+  document.getElementById("eta").textContent = data.eta + " minutes";
+  document.getElementById("etaCopy").textContent = data.eta + " minutes";
+
+  const stopsContainer = document.getElementById("stops");
+  stopsContainer.replaceChildren();
+
+  data.stops.forEach((stop, index) => {
+    const row = document.createElement("div");
+    row.className = "stop";
+
+    const icon = document.createElement("span");
+    icon.className = "stop-icon";
+    icon.textContent = index === data.stops.length - 1 ? "🏫" : "●";
+
+    const details = document.createElement("div");
+    const name = document.createElement("b");
+    const time = document.createElement("small");
+    name.textContent = stop.name;
+    time.textContent = stop.time;
+
+    details.append(name, time);
+    row.append(icon, details);
+    stopsContainer.appendChild(row);
+  });
+
+  if (!map) return;
+
+  if (routeLine) map.removeLayer(routeLine);
+  stopMarkers.forEach(marker => map.removeLayer(marker));
+  stopMarkers = [];
+
+  const points = data.stops.map(stop => stop.point);
+
+  routeLine = L.polyline(points, {
+    color: "#00b981",
+    weight: 5,
+    opacity: .95
+  }).addTo(map);
+
+  data.stops.forEach((stop, index) => {
+    const marker = L.circleMarker(stop.point, {
+      radius: index === data.stops.length - 1 ? 9 : 7,
+      color: "#04111f",
+      weight: 2,
+      fillColor: "#00e69a",
+      fillOpacity: 1
+    }).addTo(map);
+
+    marker.bindPopup(
+      "<strong>" + stop.name + "</strong><br>" + stop.time
+    );
+
+    stopMarkers.push(marker);
+  });
+
+  fitRoute();
+}
+
+                                             
