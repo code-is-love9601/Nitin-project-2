@@ -493,42 +493,69 @@ function startGPS() {
     return;
   }
 
+  if (typeof firebase === "undefined") {
+    status.textContent = "Firebase is not loaded. Check firebase-config.js.";
+    return;
+  }
+
+  const db = firebase.database();
+  const busId = "bus1";
+
   status.textContent = "Requesting location permission…";
   startButton.disabled = true;
 
-  try {
-    watchId = navigator.geolocation.watchPosition(
-      function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
+  watchId = navigator.geolocation.watchPosition(
+    function(position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const speed = position.coords.speed
+        ? Math.round(position.coords.speed * 3.6)
+        : 0;
 
-        status.textContent = "GPS active — location received.";
-        coords.textContent = "Latitude: " + lat.toFixed(6) + " | Longitude: " + lng.toFixed(6);
+      status.textContent = "GPS active — sharing live bus location.";
+      coords.textContent =
+        "Latitude: " + lat.toFixed(6) +
+        " | Longitude: " + lng.toFixed(6);
 
-        if (map && typeof L !== "undefined") {
-          if (!gpsMarker) {
-            gpsMarker = L.circleMarker([lat,lng], {
-              radius:9, color:"#ffffff", weight:2,
-              fillColor:"#00e9a1", fillOpacity:1
-            }).addTo(map).bindPopup("Your location");
-          } else {
-            gpsMarker.setLatLng([lat,lng]);
-          }
-          map.setView([lat,lng], 16);
+      db.ref("buses/" + busId).set({
+        active: true,
+        latitude: lat,
+        longitude: lng,
+        speed: speed,
+        lastUpdated: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      if (map && typeof L !== "undefined") {
+        if (!gpsMarker) {
+          gpsMarker = L.circleMarker([lat, lng], {
+            radius: 10,
+            color: "#ffffff",
+            weight: 3,
+            fillColor: "#00e9a1",
+            fillOpacity: 1
+          })
+            .addTo(map)
+            .bindPopup("Live Bus Location");
+        } else {
+          gpsMarker.setLatLng([lat, lng]);
         }
-        startButton.disabled = false;
-      },
-      function(error) {
-        status.textContent = "GPS error: " + error.message;
-        watchId = null;
-        startButton.disabled = false;
-      },
-      { enableHighAccuracy:true, maximumAge:0, timeout:20000 }
-    );
-  } catch(error) {
-    watchId = null;
-    startButton.disabled = false;
-  }
+
+        map.setView([lat, lng], 16);
+      }
+
+      startButton.disabled = false;
+    },
+    function(error) {
+      status.textContent = "GPS error: " + error.message;
+      watchId = null;
+      startButton.disabled = false;
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 20000
+    }
+  );
 }
 
 function stopGPS() {
