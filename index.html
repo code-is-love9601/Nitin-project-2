@@ -27,48 +27,46 @@ body{
 }
 a{color:inherit;text-decoration:none}
 
-/* Preloader Styles */
+/* --- Preloader / Animated Loading Screen Fix --- */
 #preloader {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg);
+  width: 100vw;
+  height: 100vh;
+  background: #031321;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 99999;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  z-index: 999999;
+  transition: opacity 0.6s ease;
 }
 .loader-box {
   text-align: center;
 }
 .loader-icon {
-  font-size: 50px;
-  animation: bounce 1.2s infinite alternate;
+  font-size: 55px;
+  animation: busPulse 1s infinite alternate;
 }
 .loader-logo {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
   color: var(--green);
   margin-top: 10px;
-  letter-spacing: 1px;
 }
 .loader-text {
   color: var(--muted);
   margin-top: 8px;
-  font-size: 14px;
-  letter-spacing: 0.5px;
+  font-size: 15px;
 }
-@keyframes bounce {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-15px) scale(1.05); }
+@keyframes busPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.15); opacity: 1; }
 }
-.fade-out {
+.hide-preloader {
   opacity: 0;
-  visibility: hidden;
+  pointer-events: none;
 }
 
 header{
@@ -157,7 +155,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <body>
 
-<!-- Live Tracking Loading Screen / Preloader -->
+<!-- Preloader / Live Loading Screen -->
 <div id="preloader">
   <div class="loader-box">
     <div class="loader-icon">🚌</div>
@@ -278,7 +276,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 </div>
 <button id="chatToggle" class="primary" onclick="toggleChat()">💬 Bus Help</button>
 
-<!-- Map JavaScript: load before our own code -->
+<!-- Map JavaScript -->
 <script
  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  crossorigin="">
@@ -287,7 +285,6 @@ footer{text-align:center;color:var(--muted);padding:25px}
 <script>
 "use strict";
 
-/* Demo coordinates near Gorakhpur. Replace with real stop coordinates. */
 const routeData = {
   village: {
     name: "Village Route",
@@ -328,8 +325,7 @@ function initialiseMap() {
   const status = document.getElementById("mapStatus");
 
   if (typeof L === "undefined") {
-    status.textContent =
-      "Map library could not load. Check your internet connection or disable content blocking, then refresh.";
+    status.textContent = "Map library could not load. Check your internet connection.";
     return;
   }
 
@@ -338,13 +334,12 @@ function initialiseMap() {
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     renderRoute();
-    setMapStatus("Map powered by OpenStreetMap and Leaflet. Coordinates shown are illustrative demo locations.");
+    setMapStatus("Map powered by OpenStreetMap and Leaflet.");
 
-    /* Fix map sizing when the section is displayed or resized. */
     setTimeout(function() {
       if (map) map.invalidateSize();
     }, 300);
@@ -370,7 +365,7 @@ function renderRoute() {
     opacity:0.95
   }).addTo(map);
 
-  data.stops.forEach(function(stop, index) {
+  data.stops.forEach(function(stop) {
     const marker = L.marker(stop.coords).addTo(map)
       .bindPopup("<b>" + stop.name + "</b><br>Sample time: " + stop.time);
     stopMarkers.push(marker);
@@ -383,10 +378,6 @@ function renderRoute() {
 
   document.getElementById("eta").textContent = data.eta;
   fitRoute();
-
-  setTimeout(function() {
-    if (map) map.invalidateSize();
-  }, 100);
 }
 
 function changeRoute() {
@@ -395,43 +386,26 @@ function changeRoute() {
 }
 
 function fitRoute() {
-  if (!map || !routeLine) {
-    setMapStatus("Map is not ready yet. Check your internet connection.");
-    return;
-  }
+  if (!map || !routeLine) return;
   map.fitBounds(routeLine.getBounds(), {padding:[25,25]});
 }
 
 function showAllStops() {
   const data = routeData[currentRoute];
-  alert(data.name + "\n\n" + data.stops.map(function(stop, i) {
-    return (i + 1) + ". " + stop.name + " — " + stop.time;
-  }).join("\n"));
+  alert(data.name + "\n\n" + data.stops.map((stop, i) => (i + 1) + ". " + stop.name + " — " + stop.time).join("\n"));
 }
 
-/* GPS: local device location only; not shared with a server. */
 function startGPS() {
   const status = document.getElementById("gpsStatus");
   const startButton = document.getElementById("startBtn");
   const coords = document.getElementById("coordinates");
-
-  if (!window.isSecureContext) {
-    status.textContent = "HTTPS required. Open the GitHub Pages HTTPS website.";
-    return;
-  }
 
   if (!navigator.geolocation) {
     status.textContent = "GPS is not supported by this browser.";
     return;
   }
 
-  if (watchId !== null) {
-    status.textContent = "GPS is already running.";
-    return;
-  }
-
   status.textContent = "Requesting location permission…";
-  coords.textContent = "";
   startButton.disabled = true;
 
   try {
@@ -441,46 +415,31 @@ function startGPS() {
         const lng = position.coords.longitude;
 
         status.textContent = "GPS active — location received.";
-        coords.textContent =
-          "Latitude: " + lat.toFixed(6) +
-          " | Longitude: " + lng.toFixed(6) +
-          " | Accuracy: about " + Math.round(position.coords.accuracy) + " m";
+        coords.textContent = "Latitude: " + lat.toFixed(6) + " | Longitude: " + lng.toFixed(6);
 
         if (map && typeof L !== "undefined") {
           if (!gpsMarker) {
             gpsMarker = L.circleMarker([lat,lng], {
               radius:9, color:"#ffffff", weight:2,
               fillColor:"#00e9a1", fillOpacity:1
-            }).addTo(map).bindPopup("Your device location");
+            }).addTo(map).bindPopup("Your location");
           } else {
             gpsMarker.setLatLng([lat,lng]);
           }
-          gpsMarker.openPopup();
           map.setView([lat,lng], 16);
         }
-
         startButton.disabled = false;
       },
       function(error) {
-        const messages = {
-          1:"Location permission denied. Allow Location for this website in Chrome settings.",
-          2:"Location unavailable. Turn on your phone's Location setting and try again.",
-          3:"GPS timed out. Try again with Location ON."
-        };
-        status.textContent = messages[error.code] || ("GPS error: " + error.message);
+        status.textContent = "GPS error: " + error.message;
         watchId = null;
         startButton.disabled = false;
       },
-      {
-        enableHighAccuracy:true,
-        maximumAge:0,
-        timeout:20000
-      }
+      { enableHighAccuracy:true, maximumAge:0, timeout:20000 }
     );
   } catch(error) {
     watchId = null;
     startButton.disabled = false;
-    status.textContent = "Could not start GPS: " + error.message;
   }
 }
 
@@ -489,7 +448,6 @@ function stopGPS() {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
   }
-
   document.getElementById("gpsStatus").textContent = "GPS stopped.";
   document.getElementById("coordinates").textContent = "";
   document.getElementById("startBtn").disabled = false;
@@ -502,7 +460,6 @@ function toggleChat() {
 
 function sendChat(event) {
   event.preventDefault();
-
   const input = document.getElementById("chatInput");
   const messages = document.getElementById("chatMessages");
   const question = input.value.trim().toLowerCase();
@@ -513,16 +470,9 @@ function sendChat(event) {
   userLine.textContent = "You: " + input.value;
   messages.appendChild(userLine);
 
-  let answer;
-  if (question.includes("gps") || question.includes("location")) {
-    answer = "Driver Mode mein Start GPS Test dabao aur Chrome mein Location permission Allow karo.";
-  } else if (question.includes("stop") || question.includes("route")) {
-    answer = "Student section mein route dropdown se Village Route ya Town Route select karo.";
-  } else if (question.includes("time") || question.includes("eta") || question.includes("arrival")) {
-    answer = "Arrival time abhi sample hai; real-time bus data connect nahi hai.";
-  } else {
-    answer = "Main demo help bot hoon. Route, stops, arrival time ya GPS ke baare mein poochho.";
-  }
+  let answer = "Main demo help bot hoon. Route, stops ya GPS ke baare mein poochho.";
+  if (question.includes("gps")) answer = "Driver Mode mein Start GPS Test dabayein.";
+  else if (question.includes("route")) answer = "Route dropdown se select karein.";
 
   const botLine = document.createElement("div");
   botLine.className = "chatline";
@@ -533,19 +483,24 @@ function sendChat(event) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-/* Start only after the page and map container exist, and hide preloader. */
-window.addEventListener("load", function() {
-  initialiseMap();
-
-  // Hide Preloader smoothly
+// Automatic Hide Loading Screen after 1.8 seconds guaranteed
+function removePreloader() {
   const preloader = document.getElementById("preloader");
   if (preloader) {
-    preloader.classList.add("fade-out");
+    preloader.classList.add("hide-preloader");
     setTimeout(function() {
       preloader.style.display = "none";
-    }, 500);
+    }, 600);
   }
+}
+
+window.addEventListener("load", function() {
+  initialiseMap();
+  setTimeout(removePreloader, 1500); // 1.5 seconds delay
 });
+
+// Fallback: Agar kisi karan load event delay ho, tab bhi 3 second me screen khul jayegi
+setTimeout(removePreloader, 3000);
 </script>
 </body>
 </html>
