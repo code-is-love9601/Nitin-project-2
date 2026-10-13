@@ -108,7 +108,7 @@ select,input{background:#0a2939;color:white;border:1px solid #426271}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 footer{text-align:center;color:var(--muted);padding:25px}
 
-/* --- Green Round Chat Button --- */
+/* --- Green Circular Chat Button --- */
 #chatToggle {
   position: fixed;
   right: 25px;
@@ -131,7 +131,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 }
 #chatToggle:hover { transform: scale(1.1); }
 
-/* --- Advanced AI Chat Window --- */
+/* --- AI Chat Window --- */
 #chatWindow {
   position: fixed;
   bottom: 95px;
@@ -277,7 +277,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
         </div>
         <label>Bus route<br>
           <select id="route" onchange="changeRoute()">
-            <option value="village">Village Route</option>
+            <option value="gorakhpur">Gorakhpur Main Route</option>
             <option value="town">Town Route</option>
           </select>
         </label>
@@ -325,7 +325,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
   <section class="features" id="features">
     <div class="feature"><h3>🗺️ Interactive Map</h3><p>Explore routes and stops on a real map.</p></div>
-    <div class="feature"><h3>🔀 Multiple Routes</h3><p>Switch between Village and Town routes.</p></div>
+    <div class="feature"><h3>🔀 Multiple Routes</h3><p>Switch between Gorakhpur Main and Town routes.</p></div>
     <div class="feature"><h3>🕒 Arrival Estimate</h3><p>See sample arrival information.</p></div>
     <div class="feature"><h3>🔐 Privacy First</h3><p>GPS test location is not shared.</p></div>
   </section>
@@ -378,23 +378,24 @@ footer{text-align:center;color:var(--muted);padding:25px}
 <script>
 "use strict";
 
+/* Map Locations Updated with MMMUT, Medical Road, and Goal Ghar */
 const routeData = {
-  village: {
-    name: "Village Route",
+  gorakhpur: {
+    name: "Gorakhpur Main Route",
     eta: "15 minutes",
     stops: [
-      {name:"Village Stop", time:"08:00", coords:[26.7350,83.3000]},
-      {name:"Main Road", time:"08:10", coords:[26.7380,83.3150]},
-      {name:"College Gate", time:"08:25", coords:[26.7420,83.3300]}
+      { name: 'MMMUT', time: "08:00", coords: [26.73108, 83.43721] },
+      { name: 'Medical Road', time: "08:12", coords: [26.7320664, 83.3843874] },
+      { name: 'Goal Ghar', time: "08:25", coords: [26.751213, 83.376266] }
     ]
   },
   town: {
     name: "Town Route",
     eta: "20 minutes",
     stops: [
-      {name:"Town Centre", time:"08:00", coords:[26.7600,83.3700]},
-      {name:"Market Stop", time:"08:10", coords:[26.7500,83.3500]},
-      {name:"College Gate", time:"08:25", coords:[26.7420,83.3300]}
+      { name: "Goal Ghar", time: "08:00", coords: [26.751213, 83.376266] },
+      { name: "Medical Road", time: "08:10", coords: [26.7320664, 83.3843874] },
+      { name: "MMMUT", time: "08:25", coords: [26.73108, 83.43721] }
     ]
   }
 };
@@ -404,7 +405,7 @@ let routeLine = null;
 let stopMarkers = [];
 let gpsMarker = null;
 let watchId = null;
-let currentRoute = "village";
+let currentRoute = "gorakhpur";
 
 function goTo(id) {
   document.getElementById(id).scrollIntoView({behavior:"smooth"});
@@ -423,11 +424,11 @@ function initialiseMap() {
   }
 
   try {
-    map = L.map("map").setView([26.738,83.315], 14);
+    map = L.map("map");
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     renderRoute();
@@ -480,7 +481,7 @@ function changeRoute() {
 
 function fitRoute() {
   if (!map || !routeLine) return;
-  map.fitBounds(routeLine.getBounds(), {padding:[25,25]});
+  map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
 }
 
 function showAllStops() {
@@ -553,30 +554,28 @@ function toggleChatWindow() {
 }
 
 /* ==========================================================
-   ADVANCED AI CHATBOT ENGINE (Smart Natural Response)
+   ADVANCED AI CHATBOT ENGINE
 ========================================================== */
 function processAdvancedAIResponse(query) {
   const q = query.toLowerCase();
 
-  // Keyword intents lists
   const timingKeys = ["time", "kab", "aayegi", "eta", "pahunchegi", "timing", "arriving", "schedule", "arrival"];
   const delayKeys = ["late", "traffic", "delay", "dei", "deri", "jaam", "slow", "stopped"];
-  const stopKeys = ["stop", "stoppage", "kaha", "where", "route stops", "kon kon", "kitne stop"];
+  const stopKeys = ["stop", "stoppage", "kaha", "where", "route stops", "kon kon", "kitne stop", "mmmut", "goal ghar", "medical road"];
   const nameKeys = ["naam", "name", "nitin", "darsh", "roushan", "naushad", "himanshu", "developer", "kisine banaya", "owner", "who made"];
   const gpsKeys = ["gps", "driver", "location", "track", "live", "my location", "test"];
   const hiKeys = ["hi", "hello", "hey", "namaste", "kaise ho", "kaise", "who are you", "kon ho"];
   const thanksKeys = ["thanks", "thank you", "dhanyawad", "shukriya", "nice", "good", "great"];
 
-  // Smart Matching Logic
   if (nameKeys.some(k => q.includes(k))) {
     return "Yeh project **Nitin** ne apne doston (**Darsh, Roushan, Naushad, Himanshu**) ki help se develop kiya hai! 👨‍💻⚡";
   }
   if (timingKeys.some(k => q.includes(k))) {
     const cur = routeData[currentRoute];
-    return `Abhi selected **${cur.name}** ke mutabiq bus college gate tak **${cur.eta}** me pahunch jayegi. (First stop: 08:00 AM, Arrival: 08:25 AM).`;
+    return `Abhi selected **${cur.name}** ke mutabiq bus final stop tak **${cur.eta}** me pahunch jayegi. (First stop: 08:00 AM, Arrival: 08:25 AM).`;
   }
   if (delayKeys.some(k => q.includes(k))) {
-    return "Main Road area me thoda traffic hone ki wajah se bus lagbhag **5-7 minute late** chal rahi hai. Kripya map par route check karein.";
+    return "Medical Road area me thoda traffic hone ki wajah se bus lagbhag **5-7 minute late** chal rahi hai. Kripya map par live route check karein.";
   }
   if (stopKeys.some(k => q.includes(k))) {
     const cur = routeData[currentRoute];
@@ -593,8 +592,7 @@ function processAdvancedAIResponse(query) {
     return "Aapka swagat hai! Agar koi aur sawaal ho toh bejhijhak poochiye! 😊🚌";
   }
 
-  // Default Smart Fallback
-  return "Main aapka sawaal samajh raha hoon! Aap mujhse bus ki timing, traffic delay, stops, driver GPS mode ya project developers ke baare me bejhijhak pooch sakte hain.";
+  return "Main aapka sawaal samajh raha hoon! Aap mujhse bus ki timing, traffic delay, stops (MMMUT, Medical Road, Goal Ghar), driver GPS mode ya project developers ke baare me pooch sakte hain.";
 }
 
 function handleChatSubmit(e) {
@@ -606,7 +604,6 @@ function handleChatSubmit(e) {
 
   const userText = input.value.trim();
 
-  // User Message Rendering
   const userMsg = document.createElement("div");
   userMsg.className = "chat-msg-user";
   userMsg.textContent = userText;
@@ -615,16 +612,14 @@ function handleChatSubmit(e) {
   input.value = "";
   body.scrollTop = body.scrollHeight;
 
-  // Typing indicator simulation
   const typing = document.createElement("div");
   typing.className = "typing-indicator";
   typing.textContent = "Saathi is typing...";
   body.appendChild(typing);
   body.scrollTop = body.scrollHeight;
 
-  // AI Response Processing
   setTimeout(() => {
     body.removeChild(typing);
     const botMsg = document.createElement("div");
     botMsg.className = "chat-msg-bot";
-    botMsg.innerHTML = processAdvancedAIRespon
+    botMsg.inne
