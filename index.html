@@ -587,30 +587,52 @@ return "Aapka swagat hai! Agar koi aur sawaal ho toh bejhijhak poochiye! ðŸ˜ŠðŸš
 }
 
 function handleChatSubmit(e) {
-e.preventDefault();
-const input = document.getElementById("userInput");
-const body = document.getElementById("chatBody");
+  e.preventDefault();
+
+  const input = document.getElementById("userInput");
+  const body = document.getElementById("chatBody");
 
   if (!input || !input.value.trim()) return;
 
   const userText = input.value.trim();
 
   const userMsg = document.createElement("div");
-userMsg.className = "chat-msg-user";
-userMsg.textContent = userText;
-body.appendChild(userMsg);
+  userMsg.className = "chat-msg-user";
+  userMsg.textContent = userText;
+  body.appendChild(userMsg);
 
   input.value = "";
-body.scrollTop = body.scrollHeight;
+  body.scrollTop = body.scrollHeight;
 
   const typing = document.createElement("div");
-typing.className = "typing-indicator";
-typing.textContent = "Saathi is typing...";
-body.appendChild(typing);
-body.scrollTop = body.scrollHeight;
+  typing.className = "typing-indicator";
+  typing.textContent = "Saathi is typing...";
+  body.appendChild(typing);
+  body.scrollTop = body.scrollHeight;
 
   setTimeout(() => {
-body.removeChild(typing);
-const botMsg = document.createElement("div");
-botMsg.className = "chat-msg-bot";
-botMsg.inne
+    body.removeChild(typing);
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "chat-msg-bot";
+    botMsg.innerHTML = processAdvancedAIResponse(userText);
+
+    body.appendChild(botMsg);
+    body.scrollTop = body.scrollHeight;
+  }, 800);
+}
+
+/* Hide preloader and start map */
+window.addEventListener("load", function () {
+  const preloader = document.getElementById("preloader");
+
+  if (preloader) {
+    preloader.classList.add("hide-preloader");
+
+    setTimeout(function () {
+      preloader.style.display = "none";
+    }, 700);
+  }
+
+  initialiseMap();
+});
