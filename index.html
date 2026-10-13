@@ -108,7 +108,7 @@ select,input{background:#0a2939;color:white;border:1px solid #426271}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 footer{text-align:center;color:var(--muted);padding:25px}
 
-/* --- Same Green Round Button (Matches Image) --- */
+/* --- Green Round Chat Button --- */
 #chatToggle {
   position: fixed;
   right: 25px;
@@ -131,13 +131,13 @@ footer{text-align:center;color:var(--muted);padding:25px}
 }
 #chatToggle:hover { transform: scale(1.1); }
 
-/* --- AI Chat Window --- */
+/* --- Advanced AI Chat Window --- */
 #chatWindow {
   position: fixed;
   bottom: 95px;
   right: 25px;
   width: 340px;
-  height: 450px;
+  height: 460px;
   background: #ffffff;
   border: 1px solid #ccc;
   border-radius: 14px;
@@ -186,6 +186,12 @@ footer{text-align:center;color:var(--muted);padding:25px}
   max-width: 85%;
   line-height: 1.4;
   align-self: flex-end;
+}
+.typing-indicator {
+  font-style: italic;
+  font-size: 12px;
+  color: #666;
+  margin-left: 5px;
 }
 .chat-footer {
   padding: 10px 12px;
@@ -341,7 +347,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
 
-<!-- Circular Green Chat Button (Matches Image) -->
+<!-- Green Circular Chat Button -->
 <button id="chatToggle" onclick="toggleChatWindow()">
   💬
 </button>
@@ -354,11 +360,11 @@ footer{text-align:center;color:var(--muted);padding:25px}
   </div>
   <div class="chat-body" id="chatBody">
     <div class="chat-msg-bot">
-      Namaste! Main Saathi AI hoon. Aapki bus kab aayegi, kitni late hai, ya traffic update baare me poocho! 🚌
+      Namaste! Main Saathi AI hoon. Bus arrival, traffic delay, stops, ya developers ke baare me kuch bhi poocho! 🚌
     </div>
   </div>
   <form class="chat-footer" onsubmit="handleChatSubmit(event)">
-    <input type="text" id="userInput" placeholder="Ask Saathi anything about bus..." required />
+    <input type="text" id="userInput" placeholder="Ask Saathi anything..." required />
     <button type="submit">Send</button>
   </form>
 </div>
@@ -546,7 +552,51 @@ function toggleChatWindow() {
   win.style.display = (win.style.display === "flex") ? "none" : "flex";
 }
 
-// Smart AI Assistant Responses
+/* ==========================================================
+   ADVANCED AI CHATBOT ENGINE (Smart Natural Response)
+========================================================== */
+function processAdvancedAIResponse(query) {
+  const q = query.toLowerCase();
+
+  // Keyword intents lists
+  const timingKeys = ["time", "kab", "aayegi", "eta", "pahunchegi", "timing", "arriving", "schedule", "arrival"];
+  const delayKeys = ["late", "traffic", "delay", "dei", "deri", "jaam", "slow", "stopped"];
+  const stopKeys = ["stop", "stoppage", "kaha", "where", "route stops", "kon kon", "kitne stop"];
+  const nameKeys = ["naam", "name", "nitin", "darsh", "roushan", "naushad", "himanshu", "developer", "kisine banaya", "owner", "who made"];
+  const gpsKeys = ["gps", "driver", "location", "track", "live", "my location", "test"];
+  const hiKeys = ["hi", "hello", "hey", "namaste", "kaise ho", "kaise", "who are you", "kon ho"];
+  const thanksKeys = ["thanks", "thank you", "dhanyawad", "shukriya", "nice", "good", "great"];
+
+  // Smart Matching Logic
+  if (nameKeys.some(k => q.includes(k))) {
+    return "Yeh project **Nitin** ne apne doston (**Darsh, Roushan, Naushad, Himanshu**) ki help se develop kiya hai! 👨‍💻⚡";
+  }
+  if (timingKeys.some(k => q.includes(k))) {
+    const cur = routeData[currentRoute];
+    return `Abhi selected **${cur.name}** ke mutabiq bus college gate tak **${cur.eta}** me pahunch jayegi. (First stop: 08:00 AM, Arrival: 08:25 AM).`;
+  }
+  if (delayKeys.some(k => q.includes(k))) {
+    return "Main Road area me thoda traffic hone ki wajah se bus lagbhag **5-7 minute late** chal rahi hai. Kripya map par route check karein.";
+  }
+  if (stopKeys.some(k => q.includes(k))) {
+    const cur = routeData[currentRoute];
+    const sList = cur.stops.map(s => s.name).join(" ➔ ");
+    return `Selected **${cur.name}** par ye main stops hain: ${sList}.`;
+  }
+  if (gpsKeys.some(k => q.includes(k))) {
+    return "Aap Driver Mode me jaakar **'Start GPS Test'** button dabayein. Isse aapke phone ka live GPS location map par dikhne lagega!";
+  }
+  if (hiKeys.some(k => q.includes(k))) {
+    return "Namaste! Main **Saathi AI** hoon. Main aapki bus tracking, arrival timing, traffic status aur stops janne me help kar sakta hoon. Poochiye kya puchna hai!";
+  }
+  if (thanksKeys.some(k => q.includes(k))) {
+    return "Aapka swagat hai! Agar koi aur sawaal ho toh bejhijhak poochiye! 😊🚌";
+  }
+
+  // Default Smart Fallback
+  return "Main aapka sawaal samajh raha hoon! Aap mujhse bus ki timing, traffic delay, stops, driver GPS mode ya project developers ke baare me bejhijhak pooch sakte hain.";
+}
+
 function handleChatSubmit(e) {
   e.preventDefault();
   const input = document.getElementById("userInput");
@@ -555,9 +605,8 @@ function handleChatSubmit(e) {
   if (!input || !input.value.trim()) return;
 
   const userText = input.value.trim();
-  const lowerText = userText.toLowerCase();
 
-  // User Message Add Karo
+  // User Message Rendering
   const userMsg = document.createElement("div");
   userMsg.className = "chat-msg-user";
   userMsg.textContent = userText;
@@ -566,58 +615,16 @@ function handleChatSubmit(e) {
   input.value = "";
   body.scrollTop = body.scrollHeight;
 
-  // AI Response Logic
+  // Typing indicator simulation
+  const typing = document.createElement("div");
+  typing.className = "typing-indicator";
+  typing.textContent = "Saathi is typing...";
+  body.appendChild(typing);
+  body.scrollTop = body.scrollHeight;
+
+  // AI Response Processing
   setTimeout(() => {
+    body.removeChild(typing);
     const botMsg = document.createElement("div");
     botMsg.className = "chat-msg-bot";
-    
-    let reply = "Mujhe samajh nahi aaya. Aap bus ki timing, traffic delay, stops ya GPS ke baare me pooch sakte hain!";
-
-    if (lowerText.includes("kab") || lowerText.includes("time") || lowerText.includes("aayegi") || lowerText.includes("eta")) {
-      const currentData = routeData[currentRoute];
-      reply = `Abhi selected ${currentData.name} par bus arrival time lagbhag ${currentData.eta} hai.`;
-    } 
-    else if (lowerText.includes("late") || lowerText.includes("delay") || lowerText.includes("traffic")) {
-      reply = "Main Road par halka traffic hai, is wajeh se bus lagbhag 5 minute late chal rahi hai. kripya map par check karein!";
-    } 
-    else if (lowerText.includes("stop") || lowerText.includes("stoppage") || lowerText.includes("kaha")) {
-      const currentData = routeData[currentRoute];
-      const stopList = currentData.stops.map(s => s.name).join(", ");
-      reply = `${currentData.name} ke stops hain: ${stopList}.`;
-    } 
-    else if (lowerText.includes("driver") || lowerText.includes("gps") || lowerText.includes("location")) {
-      reply = "Driver Mode me jaakar 'Start GPS Test' dabayein, isse aapki live location map par dikhne lagegi!";
-    } 
-    else if (lowerText.includes("hi") || lowerText.includes("hello") || lowerText.includes("hey") || lowerText.includes("namaste")) {
-      reply = "Namaste! Main Saathi AI Assistant hoon. Main aapki bus tracking me kya madad kar sakta hoon?";
-    }
-    else if (lowerText.includes("route") || lowerText.includes("change")) {
-      reply = "Aap 'Track Your Bus' section me dropdown se Village ya Town route select kar sakte hain.";
-    }
-
-    botMsg.textContent = reply;
-    body.appendChild(botMsg);
-    body.scrollTop = body.scrollHeight;
-  }, 600);
-}
-
-// Automatic Hide Loading Screen
-function removePreloader() {
-  const preloader = document.getElementById("preloader");
-  if (preloader) {
-    preloader.classList.add("hide-preloader");
-    setTimeout(function() {
-      preloader.style.display = "none";
-    }, 600);
-  }
-}
-
-window.addEventListener("load", function() {
-  initialiseMap();
-  setTimeout(removePreloader, 1500);
-});
-
-setTimeout(removePreloader, 3000);
-</script>
-</body>
-</html>
+    botMsg.innerHTML = processAdvancedAIRespon
