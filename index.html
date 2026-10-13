@@ -5,10 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusSaathi | Smart Bus Tracking</title>
 
-<!-- Map CSS -->
-<link rel="stylesheet"
- href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
- crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 
 <style>
 :root {
@@ -27,69 +24,46 @@ body{
 }
 a{color:inherit;text-decoration:none}
 
-/* --- Preloader / Animated Loading Screen Fix --- */
-#preloader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #031321;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999999;
-  transition: opacity 0.6s ease;
+#preloader{
+  position:fixed;inset:0;width:100%;height:100vh;
+  background:#031321;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:999999;
+  transition:opacity .6s ease
 }
-.loader-box {
-  text-align: center;
+.loader-box{text-align:center}
+.loader-icon{font-size:55px;animation:busPulse 1s infinite alternate}
+.loader-logo{font-size:32px;font-weight:bold;color:var(--green);margin-top:10px}
+.loader-text{color:var(--muted);margin-top:8px;font-size:15px}
+@keyframes busPulse{
+  0%{transform:scale(.9);opacity:.7}
+  100%{transform:scale(1.15);opacity:1}
 }
-.loader-icon {
-  font-size: 55px;
-  animation: busPulse 1s infinite alternate;
-}
-.loader-logo {
-  font-size: 32px;
-  font-weight: bold;
-  color: var(--green);
-  margin-top: 10px;
-}
-.loader-text {
-  color: var(--muted);
-  margin-top: 8px;
-  font-size: 15px;
-}
-@keyframes busPulse {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  100% { transform: scale(1.15); opacity: 1; }
-}
-.hide-preloader {
-  opacity: 0;
-  pointer-events: none;
-}
+.hide-preloader{opacity:0;pointer-events:none}
 
 header{
-  position:sticky;top:0;z-index:1000;
-  display:flex;align-items:center;justify-content:space-between;
-  gap:18px;padding:15px 5%;
-  background:#041522f5;border-bottom:1px solid var(--border)
+  position:sticky;top:0;z-index:1000;display:flex;
+  align-items:center;justify-content:space-between;gap:18px;
+  padding:15px 5%;background:#041522f5;border-bottom:1px solid var(--border)
 }
 .logo{font-size:25px;font-weight:bold;color:var(--green)}
 nav{display:flex;gap:20px;flex-wrap:wrap}
 nav a{font-size:14px;color:var(--muted)}
 nav a:hover{color:var(--green)}
-button,select,input{
-  font:inherit;border-radius:10px;padding:12px;
-}
+
+button,select,input{font:inherit;border-radius:10px;padding:12px}
 button{cursor:pointer;border:1px solid var(--green);background:transparent;color:white}
 button:hover{filter:brightness(1.15)}
 button.primary{background:var(--green);color:#00251b;font-weight:bold}
 button:disabled{opacity:.55;cursor:not-allowed}
+select,input{background:#0a2939;color:white;border:1px solid #426271}
+
+.language-box{display:flex;align-items:center;gap:5px;color:var(--green);white-space:nowrap}
+.language-box select{padding:8px;max-width:130px}
+
 .hero{
   padding:55px 5%;min-height:260px;
   background:radial-gradient(ellipse at 85% 30%,#075348 0%,transparent 38%),
-             linear-gradient(120deg,#041522,#062738);
+             linear-gradient(120deg,#041522,#062738)
 }
 .eyebrow{color:var(--green);font-weight:bold;letter-spacing:2px}
 h1{font-size:clamp(34px,5vw,56px);line-height:1.1;margin:12px 0}
@@ -97,22 +71,16 @@ h1 span{color:var(--green)}
 .hero p{color:var(--muted);max-width:600px}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
 main{max-width:1300px;margin:auto;padding:25px 3%}
-.section-title{margin-top:0}
 .layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:18px}
 .panel,.feature,.info{
   background:linear-gradient(145deg,#092535,#041724);
-  border:1px solid var(--border);border-radius:17px;padding:20px;
-  min-width:0
+  border:1px solid var(--border);border-radius:17px;padding:20px;min-width:0
 }
 .panel h2{margin-top:0}
 .muted{color:var(--muted)}
 .route-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-select,input{background:#0a2939;color:white;border:1px solid #426271}
 #route{min-width:160px}
-#map{
-  width:100%;height:380px;border-radius:13px;
-  margin:15px 0;background:#d8e3e3;z-index:1
-}
+#map{width:100%;height:380px;border-radius:13px;margin:15px 0;background:#d8e3e3;z-index:1}
 .map-note{font-size:12px;color:var(--muted)}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 .stat{border:1px solid var(--border);border-radius:13px;padding:15px}
@@ -127,6 +95,7 @@ select,input{background:#0a2939;color:white;border:1px solid #426271}
 .feature p{margin:0;color:var(--muted);font-size:14px}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 footer{text-align:center;color:var(--muted);padding:25px}
+
 #chatbox{
   position:fixed;right:18px;bottom:82px;width:min(340px,calc(100vw - 36px));
   background:#071e2d;border:1px solid var(--border);
@@ -138,6 +107,31 @@ footer{text-align:center;color:var(--muted);padding:25px}
 .chat-controls{display:flex;gap:7px}
 .chat-controls input{width:100%;min-width:0}
 #chatToggle{position:fixed;right:18px;bottom:18px;z-index:2001}
+
+/* The Boys Group neon flicker */
+.boys-logo{
+  display:inline-block;
+  color:#00e9a1;
+  font-weight:900;
+  letter-spacing:2px;
+  text-shadow:0 0 5px #00e9a1,0 0 12px #00e9a1,0 0 25px #00e9a1;
+  animation:boysFlicker 2.4s infinite;
+}
+@keyframes boysFlicker{
+  0%,18%,20%,22%,55%,57%,100%{
+    opacity:1;
+    text-shadow:0 0 5px #00e9a1,0 0 12px #00e9a1,0 0 25px #00e9a1;
+  }
+  19%,21%,56%{
+    opacity:.35;
+    text-shadow:none;
+  }
+  70%{
+    opacity:.8;
+    text-shadow:0 0 7px #00e9a1,0 0 18px #00e9a1;
+  }
+}
+
 @media(max-width:850px){
   .layout{grid-template-columns:1fr}
   .features{grid-template-columns:repeat(2,1fr)}
@@ -155,34 +149,42 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <body>
 
-<!-- Preloader / Live Loading Screen -->
 <div id="preloader">
   <div class="loader-box">
     <div class="loader-icon">🚌</div>
     <div class="loader-logo">BusSaathi</div>
-    <div class="loader-text">Connecting Live Bus Routes...</div>
+    <div class="loader-text" data-i18n="loading">Connecting Live Bus Routes...</div>
   </div>
 </div>
 
 <header>
   <a class="logo" href="#home">🚌 BusSaathi</a>
+
+  <label class="language-box">
+    🌐
+    <select id="languageSelect" onchange="changeLanguage(this.value)" aria-label="Choose language">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+    </select>
+  </label>
+
   <nav>
-    <a href="#home">Home</a>
-    <a href="#student">Student</a>
-    <a href="#driver">Driver</a>
-    <a href="#features">Features</a>
-    <a href="#about">About</a>
-    <a href="#developer">Developer</a>
+    <a href="#home" data-i18n="home">Home</a>
+    <a href="#student" data-i18n="student">Student</a>
+    <a href="#driver" data-i18n="driver">Driver</a>
+    <a href="#features" data-i18n="features">Features</a>
+    <a href="#about" data-i18n="about">About</a>
+    <a href="#developer" data-i18n="developer">Developer</a>
   </nav>
 </header>
 
 <section class="hero" id="home">
-  <div class="eyebrow">SMARTER DAILY COMMUTE</div>
-  <h1>Your bus. Your <span>time.</span></h1>
-  <p>Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
+  <div class="eyebrow" data-i18n="eyebrow">SMARTER DAILY COMMUTE</div>
+  <h1 id="heroTitle">Your bus. Your <span>time.</span></h1>
+  <p data-i18n="heroDescription">Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
   <div class="actions">
-    <button class="primary" onclick="goTo('student')">📍 Student Mode</button>
-    <button onclick="goTo('driver')">🧭 Driver Mode</button>
+    <button class="primary" onclick="goTo('student')" data-i18n="studentMode">📍 Student Mode</button>
+    <button onclick="goTo('driver')" data-i18n="driverMode">🧭 Driver Mode</button>
   </div>
 </section>
 
@@ -191,13 +193,14 @@ footer{text-align:center;color:var(--muted);padding:25px}
     <section class="panel" id="student">
       <div class="route-row">
         <div>
-          <h2>📍 Track Your Bus</h2>
-          <p class="muted">Choose a route to see its stops on the map.</p>
+          <h2 data-i18n="track">📍 Track Your Bus</h2>
+          <p class="muted" data-i18n="chooseRoute">Choose a route to see its stops on the map.</p>
         </div>
-        <label>Bus route<br>
+        <label>
+          <span data-i18n="busRoute">Bus route</span><br>
           <select id="route" onchange="changeRoute()">
-            <option value="village">Village Route</option>
-            <option value="town">Town Route</option>
+            <option value="village" data-i18n="villageRoute">Village Route</option>
+            <option value="town" data-i18n="townRoute">Town Route</option>
           </select>
         </label>
       </div>
@@ -207,80 +210,83 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
       <div class="stats">
         <div class="stat">
-          <div>Estimated arrival at college</div>
+          <div data-i18n="arrival">Estimated arrival at college</div>
           <div class="big" id="eta">15 minutes</div>
-          <small class="muted">Sample estimate only — not live traffic data.</small>
+          <small class="muted" data-i18n="sampleEstimate">Sample estimate only — not live traffic data.</small>
         </div>
         <div>
-          <h3>Route Stops</h3>
+          <h3 data-i18n="routeStops">Route Stops</h3>
           <ol class="stops" id="stops"></ol>
         </div>
       </div>
 
       <div class="actions">
-        <button class="primary" onclick="showAllStops()">☷ View All Stops</button>
-        <button onclick="fitRoute()">⛶ Fit Route on Map</button>
+        <button class="primary" onclick="showAllStops()" data-i18n="allStops">☷ View All Stops</button>
+        <button onclick="fitRoute()" data-i18n="fitRoute">⛶ Fit Route on Map</button>
       </div>
     </section>
 
     <section class="panel" id="driver">
-      <h2>🧭 Driver Mode</h2>
-      <p class="muted">Test your phone's GPS and display your current location on the map.</p>
-      <div class="status">🔒 Privacy: your location stays on this device. It is not shared with students.</div>
+      <h2 data-i18n="driverMode">🧭 Driver Mode</h2>
+      <p class="muted" data-i18n="gpsDescription">Test your phone's GPS and display your current location on the map.</p>
+      <div class="status" data-i18n="privacy">🔒 Privacy: your location stays on this device. It is not shared with students.</div>
 
       <div class="driver-buttons">
-        <button class="primary" id="startBtn" onclick="startGPS()">▶ Start GPS Test</button>
-        <button id="stopBtn" onclick="stopGPS()">■ Stop GPS</button>
+        <button class="primary" id="startBtn" onclick="startGPS()" data-i18n="startGPS">▶ Start GPS Test</button>
+        <button id="stopBtn" onclick="stopGPS()" data-i18n="stopGPS">■ Stop GPS</button>
       </div>
 
       <div class="status">
-        GPS Status<br><strong id="gpsStatus">GPS not started.</strong>
+        <span data-i18n="gpsStatusLabel">GPS Status</span><br>
+        <strong id="gpsStatus">GPS not started.</strong>
         <div id="coordinates" class="muted"></div>
       </div>
 
-      <p class="muted">GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.</p>
+      <p class="muted" data-i18n="gpsHint">GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.</p>
     </section>
   </div>
 
   <section class="features" id="features">
-    <div class="feature"><h3>🗺️ Interactive Map</h3><p>Explore routes and stops on a real map.</p></div>
-    <div class="feature"><h3>🔀 Multiple Routes</h3><p>Switch between Village and Town routes.</p></div>
-    <div class="feature"><h3>🕒 Arrival Estimate</h3><p>See sample arrival information.</p></div>
-    <div class="feature"><h3>🔐 Privacy First</h3><p>GPS test location is not shared.</p></div>
+    <div class="feature"><h3 data-i18n="featureMap">🗺️ Interactive Map</h3><p data-i18n="featureMapDesc">Explore routes and stops on a real map.</p></div>
+    <div class="feature"><h3 data-i18n="featureRoutes">🔀 Multiple Routes</h3><p data-i18n="featureRoutesDesc">Switch between Village and Town routes.</p></div>
+    <div class="feature"><h3 data-i18n="featureArrival">🕒 Arrival Estimate</h3><p data-i18n="featureArrivalDesc">See sample arrival information.</p></div>
+    <div class="feature"><h3 data-i18n="featurePrivacy">🔐 Privacy First</h3><p data-i18n="featurePrivacyDesc">GPS test location is not shared.</p></div>
   </section>
 
   <div class="bottom">
     <section class="info" id="about">
-      <h2>💡 About BusSaathi</h2>
-      <p class="muted">BusSaathi is a student project prototype designed to help college students explore transport routes and stops.</p>
-      <p class="muted">Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.</p>
+      <h2 data-i18n="aboutTitle">💡 About BusSaathi</h2>
+      <p class="muted" data-i18n="aboutDescription">BusSaathi is a student project prototype designed to help college students explore transport routes and stops.</p>
+      <p class="muted" data-i18n="prototypeNote">Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.</p>
     </section>
+
     <section class="info" id="developer">
-      <h2>👨‍💻 Meet the Developer</h2>
-      <p><strong style="color:var(--green)">Nitin</strong></p>
-      <p class="muted">Student Developer · Computer Science</p>
-      <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener">View GitHub Profile ↗</a>
+      <h2 data-i18n="developerTitle">👥 Meet the Developer Group</h2>
+      <p class="boys-logo">THE BOYS GROUP</p>
+      <p class="muted" data-i18n="developerDescription">Student Developers · Computer Science</p>
+      <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener">GitHub Profile ↗</a>
     </section>
   </div>
 </main>
 
-<footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
+<footer data-i18n="footer">BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
 
 <div id="chatbox">
-  <div class="route-row"><strong>🚌 BusSaathi Help</strong><button onclick="toggleChat()">✕</button></div>
-  <div id="chatMessages"><div class="chatline">Namaste! Route, stops ya GPS ke baare mein poochho.</div></div>
+  <div class="route-row">
+    <strong data-i18n="helpTitle">🚌 BusSaathi Help</strong>
+    <button onclick="toggleChat()">✕</button>
+  </div>
+  <div id="chatMessages">
+    <div class="chatline" data-i18n="welcomeMessage">Namaste! Route, stops ya GPS ke baare mein poochho.</div>
+  </div>
   <form class="chat-controls" onsubmit="sendChat(event)">
-    <input id="chatInput" placeholder="Type your question…" required>
+    <input id="chatInput" placeholder="Type your question…" data-i18n-placeholder="chatPlaceholder" required>
     <button class="primary" type="submit">➤</button>
   </form>
 </div>
-<button id="chatToggle" class="primary" onclick="toggleChat()">💬 Bus Help</button>
+<button id="chatToggle" class="primary" onclick="toggleChat()" data-i18n="chatButton">💬 Bus Help</button>
 
-<!-- Map JavaScript -->
-<script
- src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
- crossorigin="">
-</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
 <script>
 "use strict";
@@ -306,12 +312,147 @@ const routeData = {
   }
 };
 
+const translations = {
+  en: {
+    loading:"Connecting Live Bus Routes...",
+    home:"Home", student:"Student", driver:"Driver", features:"Features",
+    about:"About", developer:"Developer",
+    eyebrow:"SMARTER DAILY COMMUTE",
+    heroDescription:"Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.",
+    studentMode:"📍 Student Mode", driverMode:"🧭 Driver Mode",
+    track:"📍 Track Your Bus", chooseRoute:"Choose a route to see its stops on the map.",
+    busRoute:"Bus route", villageRoute:"Village Route", townRoute:"Town Route",
+    arrival:"Estimated arrival at college",
+    sampleEstimate:"Sample estimate only — not live traffic data.",
+    routeStops:"Route Stops", allStops:"☷ View All Stops", fitRoute:"⛶ Fit Route on Map",
+    gpsDescription:"Test your phone's GPS and display your current location on the map.",
+    privacy:"🔒 Privacy: your location stays on this device. It is not shared with students.",
+    startGPS:"▶ Start GPS Test", stopGPS:"■ Stop GPS",
+    gpsStatusLabel:"GPS Status", gpsHint:"GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.",
+    featureMap:"🗺️ Interactive Map", featureMapDesc:"Explore routes and stops on a real map.",
+    featureRoutes:"🔀 Multiple Routes", featureRoutesDesc:"Switch between Village and Town routes.",
+    featureArrival:"🕒 Arrival Estimate", featureArrivalDesc:"See sample arrival information.",
+    featurePrivacy:"🔐 Privacy First", featurePrivacyDesc:"GPS test location is not shared.",
+    aboutTitle:"💡 About BusSaathi",
+    aboutDescription:"BusSaathi is a student project prototype designed to help college students explore transport routes and stops.",
+    prototypeNote:"Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.",
+    developerTitle:"👥 Meet the Developer Group",
+    developerDescription:"Student Developers · Computer Science",
+    footer:"BusSaathi · Student Project Prototype · Live bus tracking not connected.",
+    helpTitle:"🚌 BusSaathi Help",
+    welcomeMessage:"Hello! Ask about routes, stops or GPS.",
+    chatPlaceholder:"Type your question…", chatButton:"💬 Bus Help",
+    gpsNotStarted:"GPS not started.",
+    mapLoading:"Loading interactive map…",
+    mapLibraryError:"Map library could not load. Check your internet connection.",
+    mapPowered:"Map powered by OpenStreetMap and Leaflet.",
+    gpsUnsupported:"GPS is not supported by this browser.",
+    requestingGPS:"Requesting location permission…",
+    gpsActive:"GPS active — location received.",
+    gpsStopped:"GPS stopped.",
+    gpsError:"GPS error: ",
+    yourLocation:"Your location",
+    sampleTime:"Sample time: ",
+    routeLabel:"Route: ",
+    minutes:" minutes",
+    botDefault:"I'm a demo help bot. Ask about routes, stops or GPS.",
+    botGPS:"Open Driver Mode and press Start GPS Test.",
+    botRoute:"Choose a route from the route dropdown.",
+    botStops:"The route stops are listed below the map. Select a route to change them.",
+    botTime:"Arrival times are sample estimates, not live bus data.",
+    you:"You: ",
+    botName:"BusSaathi: "
+  },
+  hi: {
+    loading:"बस रूट कनेक्ट हो रहे हैं...",
+    home:"होम", student:"विद्यार्थी", driver:"ड्राइवर", features:"फीचर्स",
+    about:"जानकारी", developer:"डेवलपर",
+    eyebrow:"आपके सफर का स्मार्ट साथी",
+    heroDescription:"बस रूट देखें, मैप पर स्टॉप खोजें और आने के अनुमानित समय की जानकारी पाएँ।",
+    studentMode:"📍 विद्यार्थी मोड", driverMode:"🧭 ड्राइवर मोड",
+    track:"📍 अपनी बस देखें", chooseRoute:"मैप पर स्टॉप देखने के लिए रूट चुनें।",
+    busRoute:"बस रूट", villageRoute:"गाँव वाला रूट", townRoute:"शहर वाला रूट",
+    arrival:"कॉलेज पहुँचने का अनुमानित समय",
+    sampleEstimate:"यह केवल अनुमान है — लाइव ट्रैफिक डेटा नहीं।",
+    routeStops:"रूट के स्टॉप", allStops:"☷ सभी स्टॉप देखें", fitRoute:"⛶ पूरा रूट मैप पर देखें",
+    gpsDescription:"अपने फोन का GPS टेस्ट करें और मैप पर अपनी वर्तमान लोकेशन देखें।",
+    privacy:"🔒 प्राइवेसी: आपकी लोकेशन इसी डिवाइस पर रहती है। इसे विद्यार्थियों के साथ साझा नहीं किया जाता।",
+    startGPS:"▶ GPS टेस्ट शुरू करें", stopGPS:"■ GPS बंद करें",
+    gpsStatusLabel:"GPS की स्थिति", gpsHint:"GPS के लिए लोकेशन अनुमति चाहिए। HTTPS वेबसाइट पर यह बेहतर काम करता है। टेस्ट करते समय पेज खुला रखें।",
+    featureMap:"🗺️ इंटरैक्टिव मैप", featureMapDesc:"मैप पर रूट और स्टॉप देखें।",
+    featureRoutes:"🔀 कई रूट", featureRoutesDesc:"गाँव और शहर के रूट के बीच बदलें।",
+    featureArrival:"🕒 पहुँचने का अनुमान", featureArrivalDesc:"अनुमानित समय देखें।",
+    featurePrivacy:"🔐 प्राइवेसी पहले", featurePrivacyDesc:"GPS टेस्ट की लोकेशन साझा नहीं होती।",
+    aboutTitle:"💡 BusSaathi के बारे में",
+    aboutDescription:"BusSaathi एक स्टूडेंट प्रोजेक्ट है, जो कॉलेज के विद्यार्थियों को रूट और स्टॉप देखने में मदद करने के लिए बनाया गया है।",
+    prototypeNote:"ध्यान दें: रूट और समय उदाहरण हैं। यह प्रोटोटाइप किसी असली बस से जुड़ा नहीं है।",
+    developerTitle:"👥 हमारी डेवलपर टीम",
+    developerDescription:"स्टूडेंट डेवलपर्स · कंप्यूटर साइंस",
+    footer:"BusSaathi · स्टूडेंट प्रोजेक्ट · लाइव बस ट्रैकिंग अभी जुड़ी नहीं है।",
+    helpTitle:"🚌 BusSaathi सहायता",
+    welcomeMessage:"नमस्ते! रूट, स्टॉप या GPS के बारे में पूछें।",
+    chatPlaceholder:"अपना सवाल लिखें…", chatButton:"💬 बस सहायता",
+    gpsNotStarted:"GPS शुरू नहीं हुआ है।",
+    mapLoading:"इंटरैक्टिव मैप लोड हो रहा है…",
+    mapLibraryError:"मैप लोड नहीं हो पाया। इंटरनेट कनेक्शन जाँचें।",
+    mapPowered:"मैप OpenStreetMap और Leaflet से चलता है।",
+    gpsUnsupported:"यह ब्राउज़र GPS सपोर्ट नहीं करता।",
+    requestingGPS:"लोकेशन की अनुमति माँगी जा रही है…",
+    gpsActive:"GPS चालू है — लोकेशन मिल गई।",
+    gpsStopped:"GPS बंद है।",
+    gpsError:"GPS त्रुटि: ",
+    yourLocation:"आपकी लोकेशन",
+    sampleTime:"उदाहरण समय: ",
+    routeLabel:"रूट: ",
+    minutes:" मिनट",
+    botDefault:"मैं डेमो सहायता बॉट हूँ। रूट, स्टॉप या GPS के बारे में पूछें।",
+    botGPS:"ड्राइवर मोड खोलें और GPS टेस्ट शुरू करें पर दबाएँ।",
+    botRoute:"रूट बदलने के लिए ड्रॉपडाउन से रूट चुनें।",
+    botStops:"मैप के नीचे रूट के स्टॉप दिए गए हैं। उन्हें बदलने के लिए रूट चुनें।",
+    botTime:"पहुँचने का समय केवल अनुमान है, लाइव बस डेटा नहीं।",
+    you:"आप: ",
+    botName:"BusSaathi: "
+  }
+};
+
+let currentLanguage = "en";
 let map = null;
 let routeLine = null;
 let stopMarkers = [];
 let gpsMarker = null;
 let watchId = null;
 let currentRoute = "village";
+
+function tr(key) {
+  return translations[currentLanguage][key] || translations.en[key] || key;
+}
+
+function changeLanguage(language) {
+  if (!translations[language]) return;
+  currentLanguage = language;
+  document.documentElement.lang = language;
+
+  document.querySelectorAll("[data-i18n]").forEach(function(element) {
+    const key = element.getAttribute("data-i18n");
+    if (translations[language][key]) element.textContent = translations[language][key];
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(function(element) {
+    const key = element.getAttribute("data-i18n-placeholder");
+    if (translations[language][key]) element.placeholder = translations[language][key];
+  });
+
+  // Keep the title's green highlight in English and use Hindi text in Hindi mode.
+  const heroTitle = document.getElementById("heroTitle");
+  heroTitle.innerHTML = language === "hi"
+    ? "आपकी बस। आपका समय।"
+    : 'Your bus. Your <span>time.</span>';
+
+  document.getElementById("gpsStatus").textContent =
+    watchId !== null ? tr("gpsActive") : tr("gpsNotStarted");
+
+  renderRoute();
+}
 
 function goTo(id) {
   document.getElementById(id).scrollIntoView({behavior:"smooth"});
@@ -322,185 +463,10 @@ function setMapStatus(message) {
 }
 
 function initialiseMap() {
-  const status = document.getElementById("mapStatus");
-
   if (typeof L === "undefined") {
-    status.textContent = "Map library could not load. Check your internet connection.";
+    setMapStatus(tr("mapLibraryError"));
     return;
   }
 
   try {
-    map = L.map("map").setView([26.738,83.315], 14);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    renderRoute();
-    setMapStatus("Map powered by OpenStreetMap and Leaflet.");
-
-    setTimeout(function() {
-      if (map) map.invalidateSize();
-    }, 300);
-  } catch (error) {
-    console.error("Map initialisation error:", error);
-    setMapStatus("Map could not start: " + error.message);
-  }
-}
-
-function renderRoute() {
-  if (!map || typeof L === "undefined") return;
-
-  const data = routeData[currentRoute];
-  const points = data.stops.map(stop => stop.coords);
-
-  if (routeLine) map.removeLayer(routeLine);
-  stopMarkers.forEach(marker => map.removeLayer(marker));
-  stopMarkers = [];
-
-  routeLine = L.polyline(points, {
-    color:"#00c98b",
-    weight:6,
-    opacity:0.95
-  }).addTo(map);
-
-  data.stops.forEach(function(stop) {
-    const marker = L.marker(stop.coords).addTo(map)
-      .bindPopup("<b>" + stop.name + "</b><br>Sample time: " + stop.time);
-    stopMarkers.push(marker);
-  });
-
-  document.getElementById("stops").innerHTML = data.stops.map(function(stop) {
-    return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
-      stop.time + "</span></li>";
-  }).join("");
-
-  document.getElementById("eta").textContent = data.eta;
-  fitRoute();
-}
-
-function changeRoute() {
-  currentRoute = document.getElementById("route").value;
-  renderRoute();
-}
-
-function fitRoute() {
-  if (!map || !routeLine) return;
-  map.fitBounds(routeLine.getBounds(), {padding:[25,25]});
-}
-
-function showAllStops() {
-  const data = routeData[currentRoute];
-  alert(data.name + "\n\n" + data.stops.map((stop, i) => (i + 1) + ". " + stop.name + " — " + stop.time).join("\n"));
-}
-
-function startGPS() {
-  const status = document.getElementById("gpsStatus");
-  const startButton = document.getElementById("startBtn");
-  const coords = document.getElementById("coordinates");
-
-  if (!navigator.geolocation) {
-    status.textContent = "GPS is not supported by this browser.";
-    return;
-  }
-
-  status.textContent = "Requesting location permission…";
-  startButton.disabled = true;
-
-  try {
-    watchId = navigator.geolocation.watchPosition(
-      function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        status.textContent = "GPS active — location received.";
-        coords.textContent = "Latitude: " + lat.toFixed(6) + " | Longitude: " + lng.toFixed(6);
-
-        if (map && typeof L !== "undefined") {
-          if (!gpsMarker) {
-            gpsMarker = L.circleMarker([lat,lng], {
-              radius:9, color:"#ffffff", weight:2,
-              fillColor:"#00e9a1", fillOpacity:1
-            }).addTo(map).bindPopup("Your location");
-          } else {
-            gpsMarker.setLatLng([lat,lng]);
-          }
-          map.setView([lat,lng], 16);
-        }
-        startButton.disabled = false;
-      },
-      function(error) {
-        status.textContent = "GPS error: " + error.message;
-        watchId = null;
-        startButton.disabled = false;
-      },
-      { enableHighAccuracy:true, maximumAge:0, timeout:20000 }
-    );
-  } catch(error) {
-    watchId = null;
-    startButton.disabled = false;
-  }
-}
-
-function stopGPS() {
-  if (watchId !== null && navigator.geolocation) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-  document.getElementById("gpsStatus").textContent = "GPS stopped.";
-  document.getElementById("coordinates").textContent = "";
-  document.getElementById("startBtn").disabled = false;
-}
-
-function toggleChat() {
-  const box = document.getElementById("chatbox");
-  box.style.display = box.style.display === "block" ? "none" : "block";
-}
-
-function sendChat(event) {
-  event.preventDefault();
-  const input = document.getElementById("chatInput");
-  const messages = document.getElementById("chatMessages");
-  const question = input.value.trim().toLowerCase();
-  if (!question) return;
-
-  const userLine = document.createElement("div");
-  userLine.className = "chatline";
-  userLine.textContent = "You: " + input.value;
-  messages.appendChild(userLine);
-
-  let answer = "Main demo help bot hoon. Route, stops ya GPS ke baare mein poochho.";
-  if (question.includes("gps")) answer = "Driver Mode mein Start GPS Test dabayein.";
-  else if (question.includes("route")) answer = "Route dropdown se select karein.";
-
-  const botLine = document.createElement("div");
-  botLine.className = "chatline";
-  botLine.textContent = "BusSaathi: " + answer;
-  messages.appendChild(botLine);
-
-  input.value = "";
-  messages.scrollTop = messages.scrollHeight;
-}
-
-// Automatic Hide Loading Screen after 1.8 seconds guaranteed
-function removePreloader() {
-  const preloader = document.getElementById("preloader");
-  if (preloader) {
-    preloader.classList.add("hide-preloader");
-    setTimeout(function() {
-      preloader.style.display = "none";
-    }, 600);
-  }
-}
-
-window.addEventListener("load", function() {
-  initialiseMap();
-  setTimeout(removePreloader, 1500); // 1.5 seconds delay
-});
-
-// Fallback: Agar kisi karan load event delay ho, tab bhi 3 second me screen khul jayegi
-setTimeout(removePreloader, 3000);
-</script>
-</body>
-</html>
+    map = L.map("map").setView([26.738,83.
