@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,10 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusSaathi | Smart Bus Tracking</title>
 
-<!-- Map CSS -->
 <link rel="stylesheet"
  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
- crossorigin=""/>
+ crossorigin="anonymous">
 
 <style>
 :root {
@@ -19,298 +19,309 @@
   --muted:#a8bdca;
   --border:#087d70;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;background:var(--bg);color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;line-height:1.5
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  line-height:1.5;
 }
-a{color:inherit;text-decoration:none}
+a { color:inherit; text-decoration:none; }
 
-/* --- Language Selection Modal --- */
+button,select,input {
+  font:inherit;
+  border-radius:10px;
+  padding:12px;
+}
+button {
+  cursor:pointer;
+  border:1px solid var(--green);
+  background:transparent;
+  color:white;
+}
+button:hover { filter:brightness(1.15); }
+button.primary {
+  background:var(--green);
+  color:#00251b;
+  font-weight:bold;
+}
+button:disabled { opacity:.55; cursor:not-allowed; }
+select,input {
+  background:#0a2939;
+  color:white;
+  border:1px solid #426271;
+}
+
+/* Language modal */
 #langModal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(3, 19, 33, 0.95);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999999;
-  backdrop-filter: blur(5px);
-  transition: opacity 0.3s ease;
+  position:fixed;
+  inset:0;
+  background:rgba(3,19,33,.97);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10000000;
+  padding:20px;
 }
 .lang-box {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 30px;
-  border-radius: 20px;
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:28px;
+  border-radius:20px;
+  text-align:center;
+  max-width:400px;
+  width:100%;
+  box-shadow:0 15px 40px #0009;
 }
-.lang-box h3 {
-  margin-top: 0;
-  color: var(--green);
-  font-size: 24px;
-}
-.lang-box p {
-  color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 20px;
-}
+.lang-box h2 { color:var(--green); }
+.lang-box p { color:var(--muted); }
 .lang-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
 }
-.lang-buttons button {
-  flex: 1;
-  min-width: 100px;
-  background: #0a2939;
-  border-color: var(--border);
-}
-.lang-buttons button:hover {
-  background: var(--green);
-  color: #00251b;
-  border-color: var(--green);
-}
+.lang-buttons button { flex:1; min-width:90px; }
 
-/* --- Preloader / Animated Loading Screen Fix --- */
+/* Loading screen */
 #preloader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #031321;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999999;
-  transition: opacity 0.6s ease;
-}
-.loader-box {
-  text-align: center;
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  z-index:999999;
+  transition:opacity .4s ease;
 }
 .loader-icon {
-  font-size: 55px;
-  animation: busPulse 1s infinite alternate;
+  font-size:55px;
+  animation:busPulse 1s infinite alternate;
 }
 .loader-logo {
-  font-size: 32px;
-  font-weight: bold;
-  color: var(--green);
-  margin-top: 10px;
+  font-size:32px;
+  font-weight:bold;
+  color:var(--green);
 }
-.loader-text {
-  color: var(--muted);
-  margin-top: 8px;
-  font-size: 15px;
+.loader-text { color:var(--muted); }
+.hide-preloader {
+  opacity:0;
+  pointer-events:none;
 }
 @keyframes busPulse {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  100% { transform: scale(1.15); opacity: 1; }
-}
-.hide-preloader {
-  opacity: 0;
-  pointer-events: none;
+  from { transform:scale(.9); opacity:.7; }
+  to { transform:scale(1.1); opacity:1; }
 }
 
-header{
-  position:sticky;top:0;z-index:1000;
-  display:flex;align-items:center;justify-content:space-between;
-  gap:18px;padding:15px 5%;
-  background:#041522f5;border-bottom:1px solid var(--border)
+/* Header */
+header {
+  position:sticky;
+  top:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:15px 5%;
+  background:#041522f5;
+  border-bottom:1px solid var(--border);
 }
-.logo{font-size:25px;font-weight:bold;color:var(--green)}
-nav{display:flex;gap:20px;flex-wrap:wrap}
-nav a{font-size:14px;color:var(--muted)}
-nav a:hover{color:var(--green)}
-button,select,input{
-  font:inherit;border-radius:10px;padding:12px;
+.logo {
+  font-size:25px;
+  font-weight:bold;
+  color:var(--green);
 }
-button{cursor:pointer;border:1px solid var(--green);background:transparent;color:white}
-button:hover{filter:brightness(1.15)}
-button.primary{background:var(--green);color:#00251b;font-weight:bold}
-button:disabled{opacity:.55;cursor:not-allowed}
-.hero{
-  padding:55px 5%;min-height:260px;
-  background:radial-gradient(ellipse at 85% 30%,#075348 0%,transparent 38%),
-             linear-gradient(120deg,#041522,#062738);
+nav { display:flex; gap:18px; flex-wrap:wrap; }
+nav a { font-size:14px; color:var(--muted); }
+nav a:hover { color:var(--green); }
+
+/* Hero */
+.hero {
+  padding:55px 5%;
+  min-height:260px;
+  background:
+    radial-gradient(ellipse at 85% 30%,#075348 0%,transparent 38%),
+    linear-gradient(120deg,#041522,#062738);
 }
-.eyebrow{color:var(--green);font-weight:bold;letter-spacing:2px}
-h1{font-size:clamp(34px,5vw,56px);line-height:1.1;margin:12px 0}
-h1 span{color:var(--green)}
-.hero p{color:var(--muted);max-width:600px}
-.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
-main{max-width:1300px;margin:auto;padding:25px 3%}
-.section-title{margin-top:0}
-.layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:18px}
-.panel,.feature,.info{
+.eyebrow {
+  color:var(--green);
+  font-weight:bold;
+  letter-spacing:2px;
+}
+h1 {
+  font-size:clamp(34px,5vw,56px);
+  line-height:1.1;
+  margin:12px 0;
+}
+h1 span { color:var(--green); }
+.hero p { color:var(--muted); max-width:600px; }
+.actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
+main { max-width:1300px; margin:auto; padding:25px 3%; }
+
+.layout {
+  display:grid;
+  grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);
+  gap:18px;
+}
+.panel,.feature,.info {
   background:linear-gradient(145deg,#092535,#041724);
-  border:1px solid var(--border);border-radius:17px;padding:20px;
-  min-width:0
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:20px;
+  min-width:0;
 }
-.panel h2{margin-top:0}
-.muted{color:var(--muted)}
-.route-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-select,input{background:#0a2939;color:white;border:1px solid #426271}
-#route{min-width:160px}
-#map{
-  width:100%;height:380px;border-radius:13px;
-  margin:15px 0;background:#d8e3e3;z-index:1
+.panel h2 { margin-top:0; }
+.muted { color:var(--muted); }
+.route-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
 }
-.map-note{font-size:12px;color:var(--muted)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.stat{border:1px solid var(--border);border-radius:13px;padding:15px}
-.big{font-size:25px;font-weight:bold;color:var(--green)}
-.stops{padding-left:22px}
-.stops li{padding:5px 0}
-.driver-buttons{display:grid;gap:10px;margin:16px 0}
-.status{padding:14px;border:1px solid #34596a;border-radius:12px;overflow-wrap:anywhere}
-.status strong{color:var(--green)}
-.features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
-.feature h3{margin:0 0 8px}
-.feature p{margin:0;color:var(--muted);font-size:14px}
-.bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
-footer{text-align:center;color:var(--muted);padding:25px}
+#route { min-width:160px; }
+#map {
+  width:100%;
+  height:380px;
+  border-radius:13px;
+  margin:15px 0;
+  background:#d8e3e3;
+  z-index:1;
+}
+.map-note { font-size:12px; color:var(--muted); }
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+.stat { border:1px solid var(--border); border-radius:13px; padding:15px; }
+.big { font-size:25px; font-weight:bold; color:var(--green); }
+.stops { padding-left:22px; }
+.stops li { padding:5px 0; }
+.driver-buttons { display:grid; gap:10px; margin:16px 0; }
+.status {
+  padding:14px;
+  border:1px solid #34596a;
+  border-radius:12px;
+  overflow-wrap:anywhere;
+}
+.status strong { color:var(--green); }
+.features {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-top:20px;
+}
+.feature h3 { margin:0 0 8px; }
+.feature p { margin:0; color:var(--muted); font-size:14px; }
+.bottom { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+footer { text-align:center; color:var(--muted); padding:25px; }
 
-/* --- Fast Neon Flicker Animation for Developers --- */
+/* THE BOYS flicker */
 .flicker-text {
-  color: #00e9a1;
-  font-size: 16px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  margin: 6px 0;
-  display: inline-block;
-  animation: neonFlicker 0.8s infinite alternate;
+  color:var(--green);
+  font-size:17px;
+  font-weight:bold;
+  letter-spacing:1px;
+  margin:8px 0;
+  display:inline-block;
+  animation:neonFlicker .8s infinite alternate;
 }
-
 @keyframes neonFlicker {
-  0%, 100% {
-    opacity: 1;
-    text-shadow: 0 0 8px #00e9a1, 0 0 15px #00e9a1;
+  0%,100% {
+    opacity:1;
+    text-shadow:0 0 8px var(--green),0 0 15px var(--green);
   }
-  50% {
-    opacity: 0.2;
-    text-shadow: none;
-  }
+  50% { opacity:.25; text-shadow:none; }
 }
 
-/* --- Floating Orange Chat Button --- */
+/* Chat widget */
 #floatingChatBtn {
-  position: fixed;
-  bottom: 25px;
-  right: 25px;
-  width: 60px;
-  height: 60px;
-  background-color: #f39c12;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-  z-index: 99999;
-  transition: transform 0.3s ease, background-color 0.3s;
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  width:60px;
+  height:60px;
+  background:#f39c12;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 5px 20px #0008;
+  cursor:pointer;
+  z-index:99998;
 }
-#floatingChatBtn:hover {
-  transform: scale(1.1);
-  background-color: #e67e22;
-}
-#floatingChatBtn svg {
-  width: 30px;
-  height: 30px;
-  fill: #ffffff;
-}
-
-/* --- Customer Support Chat Window --- */
+#floatingChatBtn svg { width:30px; height:30px; fill:white; }
 #chatWindow {
-  position: fixed;
-  bottom: 95px;
-  right: 25px;
-  width: 320px;
-  height: 420px;
-  background: #071e2d;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 99999;
+  position:fixed;
+  bottom:95px;
+  right:20px;
+  width:min(340px,calc(100vw - 30px));
+  height:420px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:0 15px 40px #0009;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  z-index:99999;
 }
 .chat-header {
-  background: #f39c12;
-  padding: 14px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  color: #fff;
+  background:#f39c12;
+  padding:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:bold;
 }
 .chat-body {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-  font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex:1;
+  padding:15px;
+  overflow-y:auto;
+  font-size:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
 }
 .chat-msg-green {
-  background: #00a86b;
-  color: #fff;
-  padding: 12px;
-  border-radius: 12px;
-  max-width: 85%;
-  line-height: 1.4;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  background:#008f65;
+  color:white;
+  padding:12px;
+  border-radius:12px;
+  max-width:90%;
+  overflow-wrap:anywhere;
 }
 .chat-footer {
-  padding: 10px;
-  display: flex;
-  gap: 8px;
-  background: #041724;
-  border-top: 1px solid var(--border);
+  padding:10px;
+  display:flex;
+  gap:8px;
+  background:#041724;
+  border-top:1px solid var(--border);
 }
-.chat-footer input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #426271;
-  background: #0a2939;
-  color: #fff;
-}
+.chat-footer input { flex:1; min-width:0; }
 
-@media(max-width:850px){
-  .layout{grid-template-columns:1fr}
-  .features{grid-template-columns:repeat(2,1fr)}
-  header{align-items:flex-start;flex-direction:column}
-  nav{gap:14px}
+@media(max-width:850px) {
+  .layout { grid-template-columns:1fr; }
+  .features { grid-template-columns:repeat(2,1fr); }
+  header { align-items:flex-start; flex-direction:column; }
+  nav { gap:14px; }
 }
-@media(max-width:500px){
-  .hero{padding:35px 5%}
-  .features,.bottom,.stats{grid-template-columns:1fr}
-  .panel{padding:14px}
-  #map{height:310px}
+@media(max-width:500px) {
+  .hero { padding:35px 5%; }
+  .features,.bottom,.stats { grid-template-columns:1fr; }
+  .panel { padding:14px; }
+  #map { height:310px; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- Language Selection Modal -->
+<!-- Language Selection -->
 <div id="langModal">
   <div class="lang-box">
-    <h3>🌐 Select Language</h3>
-    <p>Please choose your preferred language to continue / कृपया अपनी पसंदीदा भाषा चुनें</p>
+    <h2>🌐 Select Language</h2>
+    <p>Please choose your preferred language.</p>
     <div class="lang-buttons">
       <button class="primary" type="button" onclick="selectLanguage('English')">English</button>
       <button type="button" onclick="selectLanguage('Hindi')">हिन्दी</button>
@@ -319,34 +330,38 @@ footer{text-align:center;color:var(--muted);padding:25px}
   </div>
 </div>
 
-<!-- Preloader / Live Loading Screen -->
+<!-- Preloader -->
 <div id="preloader">
-  <div class="loader-box">
+  <div>
     <div class="loader-icon">🚌</div>
     <div class="loader-logo">BusSaathi</div>
-    <div class="loader-text" id="loaderText">Connecting Live Bus Routes...</div>
+    <div class="loader-text" id="loaderText">Loading BusSaathi...</div>
   </div>
 </div>
 
 <header>
   <a class="logo" href="#home">🚌 BusSaathi</a>
   <nav>
-    <a href="#home">Home</a>
-    <a href="#student">Student</a>
-    <a href="#driver">Driver</a>
-    <a href="#features">Features</a>
-    <a href="#about">About</a>
-    <a href="#developer">Developer</a>
+    <a href="#home" data-en="Home" data-hi="होम" data-hinglish="Home">Home</a>
+    <a href="#student" data-en="Student" data-hi="स्टूडेंट" data-hinglish="Student">Student</a>
+    <a href="#driver" data-en="Driver" data-hi="ड्राइवर" data-hinglish="Driver">Driver</a>
+    <a href="#features" data-en="Features" data-hi="फीचर्स" data-hinglish="Features">Features</a>
+    <a href="#about" data-en="About" data-hi="जानकारी" data-hinglish="About">About</a>
+    <a href="#developer" data-en="Developers" data-hi="डेवलपर्स" data-hinglish="Developers">Developers</a>
   </nav>
 </header>
 
 <section class="hero" id="home">
-  <div class="eyebrow">SMARTER DAILY COMMUTE</div>
-  <h1>Your bus. Your <span>time.</span></h1>
-  <p>Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
+  <div class="eyebrow" data-en="SMARTER DAILY COMMUTE" data-hi="स्मार्ट दैनिक यात्रा" data-hinglish="SMART DAILY TRAVEL">SMARTER DAILY COMMUTE</div>
+  <h1 data-en="Your bus. Your time." data-hi="आपकी बस। आपका समय।" data-hinglish="Your bus. Your time.">Your bus. Your <span>time.</span></h1>
+  <p data-en="Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place."
+     data-hi="बस रूट देखें, मैप पर स्टॉप खोजें और आने का अनुमानित समय जानें।"
+     data-hinglish="Bus routes dekho, map par stops check karo aur arrival ka estimated time jaano.">
+     Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.
+  </p>
   <div class="actions">
-    <button class="primary" onclick="goTo('student')">📍 Student Mode</button>
-    <button onclick="goTo('driver')">🧭 Driver Mode</button>
+    <button class="primary" onclick="goTo('student')" data-en="📍 Student Mode" data-hi="📍 स्टूडेंट मोड" data-hinglish="📍 Student Mode">📍 Student Mode</button>
+    <button onclick="goTo('driver')" data-en="🧭 Driver Mode" data-hi="🧭 ड्राइवर मोड" data-hinglish="🧭 Driver Mode">🧭 Driver Mode</button>
   </div>
 </section>
 
@@ -355,10 +370,13 @@ footer{text-align:center;color:var(--muted);padding:25px}
     <section class="panel" id="student">
       <div class="route-row">
         <div>
-          <h2>📍 Track Your Bus</h2>
-          <p class="muted">Choose a route to see its stops on the map.</p>
+          <h2 data-en="📍 Track Your Bus" data-hi="📍 अपनी बस ट्रैक करें" data-hinglish="📍 Apni Bus Track Karo">📍 Track Your Bus</h2>
+          <p class="muted" data-en="Choose a route to see its stops on the map."
+             data-hi="मैप पर स्टॉप देखने के लिए रूट चुनें।"
+             data-hinglish="Map par stops dekhne ke liye route select karo.">Choose a route to see its stops on the map.</p>
         </div>
-        <label>Bus route<br>
+        <label>
+          <span data-en="Bus route" data-hi="बस रूट" data-hinglish="Bus Route">Bus route</span><br>
           <select id="route" onchange="changeRoute()">
             <option value="village">Village Route</option>
             <option value="town">Town Route</option>
@@ -367,30 +385,36 @@ footer{text-align:center;color:var(--muted);padding:25px}
       </div>
 
       <div id="map"></div>
-      <p id="mapStatus" class="map-note">Loading interactive map…</p>
+      <p id="mapStatus" class="map-note">Loading map...</p>
 
       <div class="stats">
         <div class="stat">
-          <div>Estimated arrival at college</div>
+          <div data-en="Estimated arrival at college" data-hi="कॉलेज पहुँचने का अनुमानित समय" data-hinglish="College pahunchne ka estimated time">Estimated arrival at college</div>
           <div class="big" id="eta">15 minutes</div>
-          <small class="muted">Sample estimate only — not live traffic data.</small>
+          <small class="muted" data-en="Sample estimate only — not live traffic data."
+                 data-hi="यह केवल अनुमान है, लाइव ट्रैफिक डेटा नहीं।"
+                 data-hinglish="Ye sirf estimate hai, live traffic data nahi.">Sample estimate only — not live traffic data.</small>
         </div>
         <div>
-          <h3>Route Stops</h3>
+          <h3 data-en="Route Stops" data-hi="रूट के स्टॉप" data-hinglish="Route Stops">Route Stops</h3>
           <ol class="stops" id="stops"></ol>
         </div>
       </div>
 
       <div class="actions">
-        <button class="primary" onclick="showAllStops()">☷ View All Stops</button>
-        <button onclick="fitRoute()">⛶ Fit Route on Map</button>
+        <button class="primary" onclick="showAllStops()" data-en="☷ View All Stops" data-hi="☷ सभी स्टॉप देखें" data-hinglish="☷ Saare Stops Dekho">☷ View All Stops</button>
+        <button onclick="fitRoute()" data-en="⛶ Fit Route on Map" data-hi="⛶ पूरा रूट देखें" data-hinglish="⛶ Fit Route on Map">⛶ Fit Route on Map</button>
       </div>
     </section>
 
     <section class="panel" id="driver">
-      <h2>🧭 Driver Mode</h2>
-      <p class="muted">Test your phone's GPS and display your current location on the map.</p>
-      <div class="status">🔒 Privacy: your location stays on this device. It is not shared with students.</div>
+      <h2 data-en="🧭 Driver Mode" data-hi="🧭 ड्राइवर मोड" data-hinglish="🧭 Driver Mode">🧭 Driver Mode</h2>
+      <p class="muted" data-en="Test your phone GPS and display your location on the map."
+         data-hi="फोन का GPS टेस्ट करें और अपनी लोकेशन मैप पर देखें।"
+         data-hinglish="Phone ka GPS test karo aur apni location map par dekho.">Test your phone GPS and display your location on the map.</p>
+      <div class="status" data-en="🔒 Privacy: your location stays on this device. It is not shared."
+           data-hi="🔒 प्राइवेसी: आपकी लोकेशन इसी डिवाइस पर रहती है।"
+           data-hinglish="🔒 Privacy: location isi device par rehti hai.">🔒 Privacy: your location stays on this device. It is not shared.</div>
 
       <div class="driver-buttons">
         <button class="primary" id="startBtn" onclick="startGPS()">▶ Start GPS Test</button>
@@ -401,13 +425,14 @@ footer{text-align:center;color:var(--muted);padding:25px}
         GPS Status<br><strong id="gpsStatus">GPS not started.</strong>
         <div id="coordinates" class="muted"></div>
       </div>
-
-      <p class="muted">GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.</p>
+      <p class="muted" data-en="GPS requires location permission and usually works on HTTPS."
+         data-hi="GPS के लिए लोकेशन परमिशन और आमतौर पर HTTPS जरूरी है।"
+         data-hinglish="GPS ke liye location permission aur usually HTTPS chahiye.">GPS requires location permission and usually works on HTTPS.</p>
     </section>
   </div>
 
   <section class="features" id="features">
-    <div class="feature"><h3>🗺️ Interactive Map</h3><p>Explore routes and stops on a real map.</p></div>
+    <div class="feature"><h3>🗺️ Interactive Map</h3><p>Explore routes and stops on a map.</p></div>
     <div class="feature"><h3>🔀 Multiple Routes</h3><p>Switch between Village and Town routes.</p></div>
     <div class="feature"><h3>🕒 Arrival Estimate</h3><p>See sample arrival information.</p></div>
     <div class="feature"><h3>🔐 Privacy First</h3><p>GPS test location is not shared.</p></div>
@@ -421,66 +446,62 @@ footer{text-align:center;color:var(--muted);padding:25px}
     </section>
     <section class="info" id="developer">
       <h2>👨‍💻 Meet the Developers</h2>
-      <p><strong style="color:var(--green)">Nitin</strong></p>
-      <div class="flicker-text">⚡ Nitin, Darsh, Roushan, Naushad, Himanshu ⚡</div>
-      <p class="muted">Special thanks to team help for building BusSaathi!</p>
+      <p style="color:var(--green);font-weight:bold">THE BOYS GROUP</p>
+      <div class="flicker-text">⚡ Nitin · Darsh · Roushan · Naushad · Himanshu ⚡</div>
+      <p class="muted">Special thanks to the team for building BusSaathi!</p>
       <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener">View GitHub Profile ↗</a>
     </section>
   </div>
 </main>
 
-<footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
+<footer>BusSaathi · Student Project Prototype · Live bus tracking is not connected.</footer>
 
-<!-- Floating Chat Widget -->
-<div id="floatingChatBtn" onclick="toggleChatWindow()">
-  <svg viewBox="0 0 24 24">
+<!-- Floating Chat Button -->
+<div id="floatingChatBtn" onclick="toggleChatWindow()" role="button" aria-label="Open chat">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
   </svg>
 </div>
 
-<!-- Chat Window -->
 <div id="chatWindow">
   <div class="chat-header">
     <span id="chatTitle">Customer Support</span>
-    <button onclick="toggleChatWindow()" style="background:none; border:none; color:#fff; font-size:16px; cursor:pointer;">✕</button>
+    <button type="button" onclick="toggleChatWindow()" style="background:none;border:none;color:white">✕</button>
   </div>
   <div class="chat-body" id="chatBody">
     <div class="chat-msg-green" id="welcomeMsg">
-      Welcome to BusSaathi, if you need help simply reply to this message, we are online and ready to help.
+      Welcome to BusSaathi! Send a message if you need help.
     </div>
   </div>
-  <form class="chat-footer" onsubmit="handleChatSubmit(event)">
-    <input type="text" id="userInput" placeholder="Write a reply.." required />
+  <form class="chat-footer" id="chatForm">
+    <input type="text" id="userInput" placeholder="Write a message..." required>
     <button class="primary" type="submit">➤</button>
   </form>
 </div>
 
-<!-- Map JavaScript -->
-<script
- src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
- crossorigin="">
-</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ crossorigin="anonymous"></script>
 
 <script>
 "use strict";
 
 const routeData = {
   village: {
-    name: "Village Route",
-    eta: "15 minutes",
-    stops: [
-      {name:"Village Stop", time:"08:00", coords:[26.7350,83.3000]},
-      {name:"Main Road", time:"08:10", coords:[26.7380,83.3150]},
-      {name:"College Gate", time:"08:25", coords:[26.7420,83.3300]}
+    name:"Village Route",
+    eta:"15 minutes",
+    stops:[
+      {name:"Village Stop",time:"08:00",coords:[26.7350,83.3000]},
+      {name:"Main Road",time:"08:10",coords:[26.7380,83.3150]},
+      {name:"College Gate",time:"08:25",coords:[26.7420,83.3300]}
     ]
   },
   town: {
-    name: "Town Route",
-    eta: "20 minutes",
-    stops: [
-      {name:"Town Centre", time:"08:00", coords:[26.7600,83.3700]},
-      {name:"Market Stop", time:"08:10", coords:[26.7500,83.3500]},
-      {name:"College Gate", time:"08:25", coords:[26.7420,83.3300]}
+    name:"Town Route",
+    eta:"20 minutes",
+    stops:[
+      {name:"Town Centre",time:"08:00",coords:[26.7600,83.3700]},
+      {name:"Market Stop",time:"08:10",coords:[26.7500,83.3500]},
+      {name:"College Gate",time:"08:25",coords:[26.7420,83.3300]}
     ]
   }
 };
@@ -492,186 +513,113 @@ let gpsMarker = null;
 let watchId = null;
 let currentRoute = "village";
 let selectedLang = "English";
+let preloaderRemoved = false;
 
-// Fixed Language Selection Handler (No Freezing)
+/* Language selection: hide the popup immediately */
 function selectLanguage(lang) {
   selectedLang = lang;
+
   const modal = document.getElementById("langModal");
-  if (modal) {
-    modal.style.opacity = "0";
-    modal.style.pointerEvents = "none";
-    setTimeout(() => {
-      modal.style.display = "none";
-    }, 300);
-  }
+  if (modal) modal.style.display = "none";
+
+  document.documentElement.lang = lang === "Hindi" ? "hi" : "en";
+
+  document.querySelectorAll("[data-en]").forEach(function(el) {
+    const key = lang === "Hindi" ? "hi" :
+                lang === "Hinglish" ? "hinglish" : "en";
+    const value = el.getAttribute("data-" + key);
+    if (value !== null) el.textContent = value;
+  });
 
   const loaderText = document.getElementById("loaderText");
-  const welcomeMsg = document.getElementById("welcomeMsg");
   const chatTitle = document.getElementById("chatTitle");
+  const welcomeMsg = document.getElementById("welcomeMsg");
+  const userInput = document.getElementById("userInput");
 
   if (lang === "Hindi") {
-    if(loaderText) loaderText.textContent = "लाइव बस रूट कनेक्ट किए जा रहे हैं...";
-    if(chatTitle) chatTitle.textContent = "कस्टमर सपोर्ट";
-    if(welcomeMsg) welcomeMsg.textContent = "BusSaathi में आपका स्वागत है, यदि आपको सहायता चाहिए तो बस इस संदेश का उत्तर दें, हम ऑनलाइन हैं और मदद के लिए तैयार हैं।";
+    if (loaderText) loaderText.textContent = "BusSaathi लोड हो रहा है...";
+    if (chatTitle) chatTitle.textContent = "कस्टमर सपोर्ट";
+    if (welcomeMsg) welcomeMsg.textContent = "BusSaathi में आपका स्वागत है! मदद के लिए संदेश भेजें।";
+    if (userInput) userInput.placeholder = "अपना संदेश लिखें...";
   } else if (lang === "Hinglish") {
-    if(loaderText) loaderText.textContent = "Live bus routes connect ho rahe hain...";
-    if(chatTitle) chatTitle.textContent = "Customer Support";
-    if(welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi, agar help chahiye toh is message ka reply karein, hum online hain aur help ke liye ready hain.";
+    if (loaderText) loaderText.textContent = "BusSaathi load ho raha hai...";
+    if (chatTitle) chatTitle.textContent = "Customer Support";
+    if (welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi! Help ke liye message bhejo.";
+    if (userInput) userInput.placeholder = "Message likho...";
   } else {
-    if(loaderText) loaderText.textContent = "Connecting Live Bus Routes...";
-    if(chatTitle) chatTitle.textContent = "Customer Support";
-    if(welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi, if you need help simply reply to this message, we are online and ready to help.";
+    if (loaderText) loaderText.textContent = "Loading BusSaathi...";
+    if (chatTitle) chatTitle.textContent = "Customer Support";
+    if (welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi! Send a message if you need help.";
+    if (userInput) userInput.placeholder = "Write a message...";
   }
+
+  removePreloader();
 }
 
-// Toggle Chat Window
-function toggleChatWindow() {
-  const win = document.getElementById("chatWindow");
-  if(win) {
-    win.style.display = (win.style.display === "flex") ? "none" : "flex";
-  }
-}
+function removePreloader() {
+  if (preloaderRemoved) return;
+  preloaderRemoved = true;
 
-// Handle Chat Message Submit
-function handleChatSubmit(e) {
-  e.preventDefault();
-  const input = document.getElementById("userInput");
-  const body = document.getElementById("chatBody");
-  
-  if (!input || !input.value.trim()) return;
+  const preloader = document.getElementById("preloader");
+  if (!preloader) return;
 
-  const userMsg = document.createElement("div");
-  userMsg.style.alignSelf = "flex-end";
-  userMsg.style.background = "#092535";
-  userMsg.style.color = "#fff";
-  userMsg.style.padding = "10px 14px";
-  userMsg.style.borderRadius = "12px";
-  userMsg.style.maxWidth = "85%";
-  userMsg.style.border = "1px solid var(--border)";
-  userMsg.textContent = input.value;
-  body.appendChild(userMsg);
-
-  const queryText = input.value.toLowerCase();
-  input.value = "";
-  body.scrollTop = body.scrollHeight;
-
-  setTimeout(() => {
-    const botMsg = document.createElement("div");
-    botMsg.className = "chat-msg-green";
-    
-    let replyText = "Thank you for your message! Our team (Nitin, Darsh, Roushan, Naushad, Himanshu) will check your query soon.";
-    if (queryText.includes("route")) {
-      replyText = "Aap Student Mode me jaakar Village ya Town route select kar sakte hain!";
-    } else if (queryText.includes("gps")) {
-      replyText = "Driver Mode me jakar 'Start GPS Test' dabayein.";
-    }
-
-    botMsg.textContent = replyText;
-    body.appendChild(botMsg);
-    body.scrollTop = body.scrollHeight;
-  }, 700);
+  preloader.classList.add("hide-preloader");
+  setTimeout(function() {
+    preloader.style.display = "none";
+  }, 450);
 }
 
 function goTo(id) {
   const el = document.getElementById(id);
-  if(el) el.scrollIntoView({behavior:"smooth"});
+  if (el) el.scrollIntoView({behavior:"smooth"});
 }
 
-function setMapStatus(message) {
-  const status = document.getElementById("mapStatus");
-  if(status) status.textContent = message;
+function toggleChatWindow() {
+  const win = document.getElementById("chatWindow");
+  if (!win) return;
+  win.style.display = win.style.display === "flex" ? "none" : "flex";
 }
 
-function initialiseMap() {
-  const status = document.getElementById("mapStatus");
+function handleChatSubmit(event) {
+  event.preventDefault();
 
-  if (typeof L === "undefined") {
-    if(status) status.textContent = "Map library could not load. Check your internet connection.";
-    return;
+  const input = document.getElementById("userInput");
+  const body = document.getElementById("chatBody");
+  if (!input || !body || !input.value.trim()) return;
+
+  const query = input.value.trim().toLowerCase();
+  const userMsg = document.createElement("div");
+  userMsg.style.alignSelf = "flex-end";
+  userMsg.style.background = "#092535";
+  userMsg.style.padding = "10px 14px";
+  userMsg.style.borderRadius = "12px";
+  userMsg.style.maxWidth = "85%";
+  userMsg.style.overflowWrap = "anywhere";
+  userMsg.textContent = input.value.trim();
+  body.appendChild(userMsg);
+  input.value = "";
+
+  let reply;
+  if (query.includes("route") || query.includes("रूट")) {
+    reply = selectedLang === "Hindi"
+      ? "स्टूडेंट सेक्शन में जाकर Village या Town route चुनें।"
+      : selectedLang === "Hinglish"
+      ? "Student section mein Village ya Town route select karo."
+      : "Go to Student Mode and select Village or Town Route.";
+  } else if (query.includes("gps") || query.includes("location")) {
+    reply = selectedLang === "Hindi"
+      ? "Driver Mode में जाकर Start GPS Test दबाएँ।"
+      : selectedLang === "Hinglish"
+      ? "Driver Mode mein jaakar Start GPS Test dabao."
+      : "Open Driver Mode and press Start GPS Test.";
+  } else {
+    reply = selectedLang === "Hindi"
+      ? "आपका संदेश मिल गया। यह डेमो चैट है, लाइव सपोर्ट से कनेक्ट नहीं है।"
+      : selectedLang === "Hinglish"
+      ? "Message mil gaya. Ye demo chat hai, live support se connected nahi hai."
+      : "Message received. This is a demo chatbot, not connected to live support.";
   }
 
-  try {
-    map = L.map("map").setView([26.738,83.315], 14);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    renderRoute();
-    setMapStatus("Map powered by OpenStreetMap and Leaflet.");
-
-    setTimeout(function() {
-      if (map) map.invalidateSize();
-    }, 300);
-  } catch (error) {
-    console.error("Map initialisation error:", error);
-    setMapStatus("Map could not start: " + error.message);
-  }
-}
-
-function renderRoute() {
-  if (!map || typeof L === "undefined") return;
-
-  const data = routeData[currentRoute];
-  const points = data.stops.map(stop => stop.coords);
-
-  if (routeLine) map.removeLayer(routeLine);
-  stopMarkers.forEach(marker => map.removeLayer(marker));
-  stopMarkers = [];
-
-  routeLine = L.polyline(points, {
-    color:"#00c98b",
-    weight:6,
-    opacity:0.95
-  }).addTo(map);
-
-  data.stops.forEach(function(stop) {
-    const marker = L.marker(stop.coords).addTo(map)
-      .bindPopup("<b>" + stop.name + "</b><br>Sample time: " + stop.time);
-    stopMarkers.push(marker);
-  });
-
-  const stopsEl = document.getElementById("stops");
-  if(stopsEl) {
-    stopsEl.innerHTML = data.stops.map(function(stop) {
-      return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
-        stop.time + "</span></li>";
-    }).join("");
-  }
-
-  const etaEl = document.getElementById("eta");
-  if(etaEl) etaEl.textContent = data.eta;
-  fitRoute();
-}
-
-function changeRoute() {
-  const routeSelect = document.getElementById("route");
-  if(routeSelect) {
-    currentRoute = routeSelect.value;
-    renderRoute();
-  }
-}
-
-function fitRoute() {
-  if (!map || !routeLine) return;
-  map.fitBounds(routeLine.getBounds(), {padding:[25,25]});
-}
-
-function showAllStops() {
-  const data = routeData[currentRoute];
-  alert(data.name + "\n\n" + data.stops.map((stop, i) => (i + 1) + ". " + stop.name + " — " + stop.time).join("\n"));
-}
-
-function startGPS() {
-  const status = document.getElementById("gpsStatus");
-  const startButton = document.getElementById("startBtn");
-  const coords = document.getElementById("coordinates");
-
-  if (!navigator.geolocation) {
-    if(status) status.textContent = "GPS is not supported by this browser.";
-    return;
-  }
-
-  if(status) status.textContent = "Requesting location permission…";
-  if(startButton) sta
+  setTimeout(function() {
+    const botMsg = document.createElement("div");
+    botMsg.className 
