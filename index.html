@@ -39,7 +39,6 @@ a{color:inherit;text-decoration:none}
   align-items: center;
   justify-content: center;
   z-index: 9999999;
-  backdrop-filter: blur(5px);
 }
 .lang-box {
   background: var(--panel);
@@ -72,6 +71,10 @@ a{color:inherit;text-decoration:none}
   min-width: 100px;
   background: #0a2939;
   border-color: var(--border);
+  color: #fff;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 10px;
 }
 .lang-buttons button:hover {
   background: var(--green);
@@ -79,7 +82,7 @@ a{color:inherit;text-decoration:none}
   border-color: var(--green);
 }
 
-/* --- Preloader / Animated Loading Screen Fix --- */
+/* --- Preloader --- */
 #preloader {
   position: fixed;
   top: 0;
@@ -94,32 +97,15 @@ a{color:inherit;text-decoration:none}
   z-index: 999998;
   transition: opacity 0.6s ease;
 }
-.loader-box {
-  text-align: center;
-}
-.loader-icon {
-  font-size: 55px;
-  animation: busPulse 1s infinite alternate;
-}
-.loader-logo {
-  font-size: 32px;
-  font-weight: bold;
-  color: var(--green);
-  margin-top: 10px;
-}
-.loader-text {
-  color: var(--muted);
-  margin-top: 8px;
-  font-size: 15px;
-}
+.loader-box { text-align: center; }
+.loader-icon { font-size: 55px; animation: busPulse 1s infinite alternate; }
+.loader-logo { font-size: 32px; font-weight: bold; color: var(--green); margin-top: 10px; }
+.loader-text { color: var(--muted); margin-top: 8px; font-size: 15px; }
 @keyframes busPulse {
   0% { transform: scale(0.9); opacity: 0.7; }
   100% { transform: scale(1.15); opacity: 1; }
 }
-.hide-preloader {
-  opacity: 0;
-  pointer-events: none;
-}
+.hide-preloader { opacity: 0; pointer-events: none; }
 
 header{
   position:sticky;top:0;z-index:1000;
@@ -149,7 +135,6 @@ h1 span{color:var(--green)}
 .hero p{color:var(--muted);max-width:600px}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
 main{max-width:1300px;margin:auto;padding:25px 3%}
-.section-title{margin-top:0}
 .layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:18px}
 .panel,.feature,.info{
   background:linear-gradient(145deg,#092535,#041724);
@@ -180,7 +165,7 @@ select,input{background:#0a2939;color:white;border:1px solid #426271}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 footer{text-align:center;color:var(--muted);padding:25px}
 
-/* --- Fast Neon Flicker Animation for Developers --- */
+/* --- Neon Flicker Animation for Developers --- */
 .flicker-text {
   color: #00e9a1;
   font-size: 16px;
@@ -190,16 +175,9 @@ footer{text-align:center;color:var(--muted);padding:25px}
   display: inline-block;
   animation: neonFlicker 0.8s infinite alternate;
 }
-
 @keyframes neonFlicker {
-  0%, 100% {
-    opacity: 1;
-    text-shadow: 0 0 8px #00e9a1, 0 0 15px #00e9a1;
-  }
-  50% {
-    opacity: 0.2;
-    text-shadow: none;
-  }
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px #00e9a1, 0 0 15px #00e9a1; }
+  50% { opacity: 0.2; text-shadow: none; }
 }
 
 /* --- Floating Orange Chat Button --- */
@@ -219,15 +197,8 @@ footer{text-align:center;color:var(--muted);padding:25px}
   z-index: 99999;
   transition: transform 0.3s ease, background-color 0.3s;
 }
-#floatingChatBtn:hover {
-  transform: scale(1.1);
-  background-color: #e67e22;
-}
-#floatingChatBtn svg {
-  width: 30px;
-  height: 30px;
-  fill: #ffffff;
-}
+#floatingChatBtn:hover { transform: scale(1.1); background-color: #e67e22; }
+#floatingChatBtn svg { width: 30px; height: 30px; fill: #ffffff; }
 
 /* --- Customer Support Chat Window --- */
 #chatWindow {
@@ -311,14 +282,14 @@ footer{text-align:center;color:var(--muted);padding:25px}
     <h3>🌐 Select Language</h3>
     <p>Please choose your preferred language.</p>
     <div class="lang-buttons">
-      <button class="primary" type="button" onclick="selectLanguage('English')">English</button>
-      <button type="button" onclick="selectLanguage('Hindi')">हिन्दी</button>
-      <button type="button" onclick="selectLanguage('Hinglish')">Hinglish</button>
+      <button class="primary" type="button" id="btnEng">English</button>
+      <button type="button" id="btnHin">हिन्दी</button>
+      <button type="button" id="btnHing">Hinglish</button>
     </div>
   </div>
 </div>
 
-<!-- Preloader / Live Loading Screen -->
+<!-- Preloader -->
 <div id="preloader">
   <div class="loader-box">
     <div class="loader-icon">🚌</div>
@@ -492,12 +463,11 @@ let watchId = null;
 let currentRoute = "village";
 let selectedLang = "English";
 
-// Fixed Language Function (Removes modal immediately)
 function selectLanguage(lang) {
   selectedLang = lang;
   const modal = document.getElementById("langModal");
   if (modal) {
-    modal.remove(); // Completely remove modal from DOM so it never freezes screen
+    modal.style.display = "none";
   }
 
   const loaderText = document.getElementById("loaderText");
@@ -518,6 +488,16 @@ function selectLanguage(lang) {
     if(welcomeMsg) welcomeMsg.textContent = "Welcome to BusSaathi, if you need help simply reply to this message, we are online and ready to help.";
   }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+  const btnEng = document.getElementById("btnEng");
+  const btnHin = document.getElementById("btnHin");
+  const btnHing = document.getElementById("btnHing");
+
+  if(btnEng) btnEng.addEventListener("click", function() { selectLanguage('English'); });
+  if(btnHin) btnHin.addEventListener("click", function() { selectLanguage('Hindi'); });
+  if(btnHing) btnHing.addEventListener("click", function() { selectLanguage('Hinglish'); });
+});
 
 // Toggle Chat Window
 function toggleChatWindow() {
@@ -667,11 +647,3 @@ function startGPS() {
     if(status) status.textContent = "GPS is not supported by this browser.";
     return;
   }
-
-  if(status) status.textContent = "Requesting location permission…";
-  if(startButton) startButton.disabled = true;
-
-  try {
-    watchId = navigator.geolocation.watchPosition(
-      function(position) {
-        const lat 
