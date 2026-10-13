@@ -2,1015 +2,495 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BusSaathi | College Bus Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#03101d">
+  <title>BusSaathi — Your Journey, Smarter</title>
+  <meta name="description" content="BusSaathi helps college students explore bus routes, stops and estimated arrival times.">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      --bg: #03101d;
+      --panel: #071a2a;
+      --panel2: #0a2133;
+      --green: #00f5a0;
+      --green2: #00c982;
+      --text: #f4f8ff;
+      --muted: #a8b8c9;
+      --border: rgba(0,245,160,.23);
+      --radius: 20px;
+    }
 
-<style>
-*{box-sizing:border-box}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 85px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .container { width: min(1180px, 92%); margin: auto; }
 
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f3f7f4;
-  color:#19352a;
-}
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(3,16,29,.94);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      min-height: 72px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo {
+      font-size: 25px;
+      font-weight: 850;
+      letter-spacing: -1px;
+      white-space: nowrap;
+    }
+    .logo span { color: var(--green); }
+    .logo-icon { color: var(--green); margin-right: 7px; }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a { font-size: 14px; color: #d7e1ed; transition: .2s; }
+    .nav-links a:hover { color: var(--green); }
+    .demo-tag {
+      color: var(--green);
+      border: 1px solid var(--green);
+      border-radius: 30px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
 
-header{
-  background:#155c40;
-  color:white;
-  padding:18px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-}
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(ellipse at 78% 30%, rgba(0,245,160,.14), transparent 34%),
+        radial-gradient(ellipse at 10% 20%, rgba(15,85,155,.22), transparent 45%),
+        linear-gradient(115deg, #03101d 25%, #062337 100%);
+    }
+    .hero-grid {
+      min-height: 470px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      align-items: center;
+      gap: 20px;
+      padding-top: 42px;
+      padding-bottom: 42px;
+    }
+    .eyebrow {
+      display: inline-block;
+      color: var(--green);
+      border: 1px solid var(--border);
+      background: rgba(0,245,160,.07);
+      border-radius: 30px;
+      padding: 5px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(43px, 6vw, 70px);
+      line-height: 1.02;
+      letter-spacing: -2.5px;
+      margin-bottom: 18px;
+    }
+    h1 span, .section-title span { color: var(--green); }
+    .hero-copy { color: var(--muted); max-width: 540px; font-size: 16px; }
+    .search-row { display: flex; gap: 10px; margin-top: 25px; max-width: 540px; }
+    .route-select {
+      min-width: 0;
+      flex: 1;
+      color: var(--text);
+      background: #0a2031;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px;
+      outline: none;
+    }
+    .route-select:focus, input:focus { border-color: var(--green); }
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 19px;
+      border-radius: 12px;
+      border: 1px solid var(--green);
+      color: #00160e;
+      background: var(--green);
+      font-weight: 800;
+      transition: .2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(0,245,160,.22); }
+    .btn-outline { color: var(--green); background: transparent; }
+    .hero-stats { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 25px; }
+    .hero-stats div { color: #d6e3ee; font-size: 12px; }
+    .hero-stats strong { display: block; color: var(--green); font-size: 14px; }
 
-.logo{font-size:23px;font-weight:bold}
-.tag{
-  font-size:12px;
-  background:#ffffff25;
-  padding:7px 10px;
-  border-radius:20px;
-}
+    .hero-art {
+      min-height: 330px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      isolation: isolate;
+    }
+    .hero-art::before {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: rgba(0,245,160,.12);
+      filter: blur(65px);
+      z-index: -1;
+    }
+    .bus-illustration {
+      width: min(100%, 490px);
+      filter: drop-shadow(0 20px 35px rgba(0,0,0,.5));
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .art-caption {
+      position: absolute;
+      bottom: 7px;
+      right: 8px;
+      color: var(--green);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(3,16,29,.78);
+      padding: 10px 15px;
+      font-size: 12px;
+    }
 
-main{max-width:950px;margin:auto;padding:22px 15px}
+    section { padding: 36px 0; }
+    .section-title { font-size: clamp(25px, 4vw, 34px); letter-spacing: -.8px; margin-bottom: 5px; }
+    .section-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 23px; }
+    .title-line { width: 48px; height: 4px; background: var(--green); border-radius: 5px; margin: 10px 0 22px; }
 
-.hero{
-  background:#e0f1e5;
-  border-radius:22px;
-  padding:25px 20px;
-}
+    .feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .feature-card {
+      padding: 23px 17px;
+      background: linear-gradient(145deg, #071b2b, #041321);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: .25s;
+    }
+    .feature-card:hover { transform: translateY(-4px); border-color: var(--green); }
+    .feature-icon { font-size: 30px; color: var(--green); margin-bottom: 10px; }
+    .feature-card h3 { font-size: 16px; margin-bottom: 7px; }
+    .feature-card p { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .text-link { color: var(--green); font-size: 13px; font-weight: 800; }
 
-.eyebrow{color:#176544;font-weight:bold;font-size:13px}
+    .tracking-layout {
+      display: grid;
+      grid-template-columns: 300px minmax(0,1fr);
+      gap: 17px;
+      padding: 18px;
+      border: 1px solid var(--green);
+      border-radius: 22px;
+      background: linear-gradient(145deg, #071b2b, #03101d);
+      box-shadow: 0 0 25px rgba(0,245,160,.07);
+    }
+    .tracking-sidebar h3 { font-size: 21px; }
+    .tracking-sidebar .muted { color: var(--muted); font-size: 13px; margin: 3px 0 18px; }
+    .tracking-sidebar label { display: block; font-size: 13px; margin-bottom: 7px; color: #d7e5ef; }
+    .tracking-sidebar select {
+      width: 100%;
+      padding: 12px;
+      background: #0b2132;
+      color: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+    .eta-card {
+      background: rgba(0,245,160,.08);
+      border: 1px solid var(--green);
+      padding: 13px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .eta-card small { color: var(--green); font-weight: 800; display: block; }
+    .eta-number { font-size: 25px; font-weight: 850; line-height: 1.5; }
+    .eta-card p { font-size: 11px; color: var(--muted); }
+    .stops-title { margin-bottom: 9px; font-size: 14px; }
+    .stop { border-left: 2px solid rgba(0,245,160,.5); margin-left: 7px; padding: 0 0 13px 15px; position: relative; }
+    .stop::before {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      left: -6px;
+      top: 7px;
+    }
+    .stop:last-child { border-left-color: transparent; }
+    .stop strong { display: block; font-size: 13px; }
+    .stop span { color: var(--muted); font-size: 12px; }
+    #map { min-height: 430px; width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid #345167; }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #071a2a; color: white; }
+    .leaflet-control-zoom a { background: #071a2a !important; color: var(--green) !important; border-color: #345167 !important; }
+    .map-note { color: var(--muted); font-size: 11px; margin-top: 8px; }
 
-h1{font-size:38px;line-height:1.1;margin:12px 0}
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 16px; }
+    .info-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 19px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #061827;
+    }
+    .info-card .big-icon { font-size: 29px; color: var(--green); }
+    .info-card h3 { font-size: 15px; }
+    .info-card p { color: var(--muted); font-size: 12px; }
+    .info-card a { margin-left: auto; color: var(--green); font-size: 20px; }
 
-p{line-height:1.6;color:#64756a}
+    .driver-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+    .driver-panel p { color: var(--muted); font-size: 13px; margin: 8px 0 14px; }
 
-button,select{
-  font-size:15px;
-  padding:13px;
-  border-radius:10px;
-  border:0;
-}
+    .developer {
+      display: grid;
+      grid-template-columns: .9fr 1.5fr;
+      gap: 20px;
+      align-items: center;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background:
+        radial-gradient(ellipse at 90% 0%, rgba(0,245,160,.09), transparent 45%),
+        #061827;
+    }
+    .developer-main { display: flex; align-items: center; gap: 16px; }
+    .avatar {
+      width: 82px;
+      height: 82px;
+      flex-shrink: 0;
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--green);
+      font-size: 32px;
+      font-weight: 900;
+      box-shadow: 0 0 20px rgba(0,245,160,.14);
+    }
+    .developer h3 { font-size: 26px; }
+    .developer h3 span { color: var(--green); }
+    .developer p { color: var(--muted); font-size: 13px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .chip { border: 1px solid var(--border); border-radius: 20px; padding: 4px 9px; color: var(--green); font-size: 11px; }
+    .developer-about { border-left: 1px solid var(--border); padding-left: 22px; }
+    .developer-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+    .developer-actions .btn { padding: 9px 13px; font-size: 12px; }
 
-button{
-  background:#176544;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
+    footer { border-top: 1px solid var(--border); padding: 20px 0; margin-top: 8px; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    footer p { color: var(--muted); font-size: 12px; }
+    footer .logo { font-size: 20px; }
 
-button:hover{opacity:.9}
+    .chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1200;
+      border: 1px solid var(--green);
+      border-radius: 30px;
+      padding: 12px 17px;
+      background: var(--green);
+      color: #00160e;
+      font-weight: 850;
+      box-shadow: 0 0 25px rgba(0,245,160,.2);
+    }
+    .chat-panel {
+      display: none;
+      position: fixed;
+      z-index: 1200;
+      right: 20px;
+      bottom: 80px;
+      width: min(340px, calc(100vw - 30px));
+      height: 420px;
+      background: #061827;
+      border: 1px solid var(--green);
+      border-radius: 17px;
+      overflow: hidden;
+      box-shadow: 0 15px 55px rgba(0,0,0,.55);
+    }
+    .chat-header { background: #092337; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .chat-header strong { color: var(--green); }
+    .chat-header button { color: white; border: 0; background: transparent; font-size: 22px; }
+    .chat-messages { height: 300px; overflow-y: auto; padding: 12px; }
+    .message { font-size: 12px; padding: 10px 12px; border-radius: 12px; margin-bottom: 9px; max-width: 90%; white-space: pre-wrap; }
+    .bot-message { background: #102c40; border: 1px solid #23485e; }
+    .user-message { background: rgba(0,245,160,.13); border: 1px solid var(--border); margin-left: auto; }
+    .chat-input-row { display: flex; gap: 7px; padding: 10px; border-top: 1px solid var(--border); }
+    .chat-input-row input { flex: 1; min-width: 0; background: #0b2132; color: white; border: 1px solid #315066; border-radius: 9px; padding: 9px; outline: none; font-size: 12px; }
+    .chat-input-row button { background: var(--green); border: 0; border-radius: 9px; padding: 0 14px; font-weight: 900; }
 
-.secondary{
-  background:white;
-  color:#176544;
-  border:1px solid #cdded1;
-}
-
-.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-  margin-top:18px;
-}
-
-.card{
-  background:white;
-  border:1px solid #e0e9e2;
-  border-radius:18px;
-  padding:19px;
-  min-width:0;
-}
-
-h2{font-size:20px;margin:8px 0}
-.icon{font-size:28px}
-
-select{
-  width:100%;
-  border:1px solid #d5e1d7;
-  background:white;
-  margin-top:8px;
-}
-
-#map{
-  height:300px;
-  width:100%;
-  margin-top:15px;
-  border-radius:14px;
-  overflow:hidden;
-  background:#e5efe3;
-  z-index:1;
-}
-
-.eta{
-  background:#e5f4e9;
-  border-radius:13px;
-  padding:15px;
-  margin:14px 0;
-}
-
-.eta strong{
-  font-size:29px;
-  color:#176544;
-}
-
-.stop{
-  padding:13px 0;
-  border-bottom:1px solid #e5ebe5;
-}
-
-.stop:last-child{border:0}
-.stop b{display:block}
-.stop small{color:#78867d}
-
-.note{font-size:12px;color:#7b817d}
-#driver{display:none}
-#notice{overflow-wrap:anywhere;font-size:13px}
-
-footer{
-  text-align:center;
-  padding:22px;
-  color:#758278;
-  font-size:13px;
-}
-
-@media(max-width:600px){
-  h1{font-size:32px}
-  .grid{grid-template-columns:1fr}
-  .hero{padding:21px 17px}
-  #map{height:270px}
-}
-</style>
+    @media (max-width: 850px) {
+      .nav-links { gap: 13px; }
+      .nav-links a { font-size: 12px; }
+      .hero-grid { grid-template-columns: 1fr; padding-top: 36px; }
+      .hero-art { min-height: 260px; }
+      .bus-illustration { max-width: 440px; }
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+      .tracking-layout { grid-template-columns: 1fr; }
+      #map { min-height: 350px; }
+      .developer { grid-template-columns: 1fr; }
+      .developer-about { border-left: 0; border-top: 1px solid var(--border); padding: 18px 0 0; }
+    }
+    @media (max-width: 560px) {
+      .nav-inner { padding: 12px 0; flex-wrap: wrap; }
+      .logo { font-size: 22px; }
+      .nav-links { order: 3; width: 100%; justify-content: space-between; gap: 8px; }
+      .nav-links a { font-size: 12px; }
+      .demo-tag { font-size: 10px; }
+      h1 { letter-spacing: -1.5px; }
+      .hero-grid { padding-top: 30px; padding-bottom: 25px; }
+      .search-row { flex-direction: column; }
+      .search-row .btn { width: 100%; }
+      .hero-stats { gap: 12px 20px; }
+      section { padding: 28px 0; }
+      .feature-grid { gap: 10px; }
+      .feature-card { padding: 16px 12px; }
+      .feature-card h3 { font-size: 14px; }
+      .feature-card p { font-size: 12px; }
+      .tracking-layout { padding: 12px; }
+      #map { min-height: 300px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .developer { padding: 18px; }
+      .developer-main { align-items: flex-start; }
+      .avatar { width: 60px; height: 60px; font-size: 25px; }
+      .developer h3 { font-size: 23px; }
+      .footer-inner { justify-content: center; text-align: center; }
+      .chat-toggle { right: 13px; bottom: 13px; }
+      .chat-panel { right: 10px; bottom: 72px; }
+    }
+  </style>
 </head>
 
 <body>
-
-<header>
-  <div class="logo">🚌 BusSaathi</div>
-  <div class="tag">PROJECT DEMO</div>
-</header>
-
-<main>
-
-<section class="hero">
-  <div class="eyebrow">SMARTER DAILY COMMUTE</div>
-  <h1>Your bus.<br>Your time.</h1>
-  <p>
-    Track your college bus route, explore stops on a real map,
-    and check sample arrival information.
-  </p>
-
-  <div class="actions">
-    <button onclick="studentMode()">📍 Student Mode</button>
-    <button class="secondary" onclick="driverMode()">🧭 Driver Mode</button>
-  </div>
-</section>
-
-<div class="grid">
-
-<section class="card" id="student">
-  <div class="icon">📍</div>
-  <h2>Track Your Bus</h2>
-  <p>Select a route to see its stops on the interactive map.</p>
-
-  <label for="route">Select bus route</label>
-  <select id="route" onchange="changeRoute()">
-    <option value="village">Village Route</option>
-    <option value="town">Town Route</option>
-  </select>
-
-  <div id="map"></div>
-
-  <p class="note">
-    Map powered by OpenStreetMap and Leaflet.
-    Sample stop coordinates are illustrative, not verified bus stops.
-  </p>
-
-  <div class="eta">
-    <div>Estimated arrival at college</div>
-    <strong id="eta">15 minutes</strong>
-    <div class="note" id="etaNote">
-      Sample estimate only — not live traffic data
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a class="logo" href="#home"><span class="logo-icon">▣</span>Bus<span>Saathi</span></a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#home">Home</a>
+        <a href="#track">Track Bus</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#developer">Developer</a>
+      </nav>
+      <span class="demo-tag">● PROJECT DEMO</span>
     </div>
-  </div>
-
-  <h2>Route Stops</h2>
-  <div id="stops"></div>
-</section>
-
-<section class="card" id="driver">
-  <div class="icon">🧭</div>
-  <h2>Driver Mode</h2>
-  <p>
-    Test your phone's GPS and display your current location
-    on the map. Your location is not sent to students.
-  </p>
-
-  <div class="actions">
-    <button id="start" onclick="startGPS()">Start GPS Test</button>
-    <button class="secondary" onclick="stopGPS()">Stop GPS</button>
-  </div>
-
-  <p id="notice">GPS not started.</p>
-
-  <p class="note">
-    Keep this page open while testing. GPS requires permission
-    and a secure HTTPS website. This demo does not broadcast location.
-  </p>
-</section>
-
-<section class="card">
-  <div class="icon">⏱️</div>
-  <h2>Arrival Information</h2>
-  <p>
-    View the sample arrival estimate for the selected bus route.
-  </p>
-  <p class="note">
-    Accurate live ETA requires actual bus location, route data,
-    and a suitable travel-time calculation.
-  </p>
-</section>
-
-<section class="card">
-  <div class="icon">🔒</div>
-  <h2>Privacy First</h2>
-  <p>
-    Location access requires permission. A production version
-    should use authenticated drivers, secure data access,
-    and clear location-sharing controls.
-  </p>
-</section>
-
-</div>
-</main>
-
-<footer>
-  BusSaathi · Student Project Prototype · Live tracking not connected
-</footer>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-// Sample coordinates only.
-// Replace these with your actual bus-stop coordinates.
-const routeData = {
-  village: {
-    eta: 15,
-    stops: [
-      {
-        name: "Village Stop",
-        info: "Route start · 08:00",
-        lat: 26.7600,
-        lng: 83.3500
-      },
-      {
-        name: "Main Road",
-        info: "Pickup point · 08:10",
-        lat: 26.7650,
-        lng: 83.3600
-      },
-      {
-        name: "College Gate",
-        info: "Destination · 08:25",
-        lat: 26.7700,
-        lng: 83.3700
-      }
-    ]
-  },
-
-  town: {
-    eta: 9,
-    stops: [
-      {
-        name: "Town Bus Stand",
-        info: "Route start · 08:12",
-        lat: 26.7750,
-        lng: 83.3550
-      },
-      {
-        name: "Market Crossing",
-        info: "Pickup point · 08:18",
-        lat: 26.7730,
-        lng: 83.3650
-      },
-      {
-        name: "College Gate",
-        info: "Destination · 08:27",
-        lat: 26.7700,
-        lng: 83.3700
-      }
-    ]
-  }
-};
-
-// Create interactive map
-const map = L.map("map").setView([26.7700, 83.3700], 13);
-
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-
-// Layers for route stops and route line
-let stopMarkers = L.layerGroup().addTo(map);
-let routeLine = L.polyline([], {
-  color: "#176544",
-  weight: 5,
-  opacity: 0.8
-}).addTo(map);
-
-let gpsMarker = null;
-let watchId = null;
-
-// Draw selected route on map and on the page
-function changeRoute() {
-  const route = document.getElementById("route").value;
-  const data = routeData[route];
-
-  document.getElementById("eta").textContent =
-    data.eta + " minutes";
-
-  document.getElementById("etaNote").textContent =
-    "Sample estimate only — not live traffic data";
-
-  stopMarkers.clearLayers();
-
-  const coordinates = [];
-
-  data.stops.forEach((stop, index) => {
-    const position = [stop.lat, stop.lng];
-    coordinates.push(position);
-
-    const marker = L.marker(position).addTo(stopMarkers);
-
-    marker.bindPopup(
-      "<b>" + stop.name + "</b><br>" + stop.info
-    );
-
-    document.getElementById("stops").innerHTML += "";
-  });
-
-  routeLine.setLatLngs(coordinates);
-
-  if (coordinates.length) {
-    map.fitBounds(routeLine.getBounds(), {
-      padding: [30, 30],
-      maxZoom: 15
-    });
-  }
-
-  document.getElementById("stops").innerHTML =
-    data.stops.map((stop, index) =>
-      '<div class="stop">' +
-        '<b>' + (index === data.stops.length - 1 ? "🏫 " : "📍 ") +
-        stop.name + '</b>' +
-        '<small>' + stop.info + '</small>' +
-      '</div>'
-    ).join("");
-}
-
-// Student Mode
-function studentMode() {
-  document.getElementById("student").scrollIntoView({
-    behavior: "smooth"
-  });
-
-  setTimeout(() => map.invalidateSize(), 300);
-}
-
-// Driver Mode
-function driverMode() {
-  document.getElementById("driver").style.display = "block";
-
-  document.getElementById("driver").scrollIntoView({
-    behavior: "smooth"
-  });
-}
-
-// Test phone GPS and show its marker locally on the map
-function startGPS() {
-  const notice = document.getElementById("notice");
-
-  if (!navigator.geolocation) {
-    notice.textContent =
-      "Your browser does not support GPS location.";
-    return;
-  }
-
-  if (
-    location.protocol !== "https:" &&
-    location.hostname !== "localhost"
-  ) {
-    notice.textContent =
-      "GPS needs a secure HTTPS website. Deploy this page first.";
-    return;
-  }
-
-  if (watchId !== null) return;
-
-  notice.textContent = "Requesting location permission...";
-
-  watchId = navigator.geolocation.watchPosition(
-    position => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      const accuracy = Math.round(position.coords.accuracy);
-
-      notice.textContent =
-        "GPS test successful! Latitude: " + lat.toFixed(5) +
-        ", Longitude: " + lng.toFixed(5) +
-        ". Accuracy: about " + accuracy + " metres. Not shared.";
-
-      const currentPosition = [lat, lng];
-
-      if (!gpsMarker) {
-        gpsMarker = L.marker(currentPosition)
-          .addTo(map)
-          .bindPopup("Your current GPS position");
-      } else {
-        gpsMarker.setLatLng(currentPosition);
-      }
-
-      map.setView(currentPosition, 15);
-      gpsMarker.openPopup();
-    },
-
-    error => {
-      const errors = {
-        1: "Location permission denied. Allow it in browser settings.",
-        2: "Location unavailable. Check phone GPS settings.",
-        3: "Location request timed out. Try again."
-      };
-
-      notice.textContent =
-        errors[error.code] || "Could not get GPS location.";
-
-      watchId = null;
-    },
-
-    {
-      enableHighAccuracy: true,
-      maximumAge: 5000,
-      timeout: 15000
-    }
-  );
-}
-
-// Stop GPS tracking
-function stopGPS() {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-  }
-
-  watchId = null;
-
-  document.getElementById("notice").textContent =
-    "GPS test stopped. Location is not being shared.";
-
-  if (gpsMarker) {
-    map.removeLayer(gpsMarker);
-    gpsMarker = null;
-  }
-}
-
-// Load the default route
-changeRoute();
-</script>
-<!-- BusSaathi Simple Chatbot -->
-<style>
-  #busbot-button {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    z-index: 9999;
-    border: 0;
-    border-radius: 50px;
-    padding: 14px 20px;
-    background: #087f5b;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 14px #0003;
-  }
-
-  #busbot {
-    display: none;
-    position: fixed;
-    right: 16px;
-    bottom: 80px;
-    z-index: 9999;
-    width: min(340px, calc(100vw - 32px));
-    height: 430px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 5px 25px #0003;
-    font-family: Arial, sans-serif;
-    color: #222;
-  }
-
-  #busbot-header {
-    background: #087f5b;
-    color: white;
-    padding: 15px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  #busbot-close {
-    background: none;
-    border: 0;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-  }
-
-  #busbot-messages {
-    height: 300px;
-    overflow-y: auto;
-    padding: 12px;
-    background: #f5f7f7;
-  }
-
-  .busbot-msg {
-    padding: 10px 12px;
-    margin: 8px 0;
-    border-radius: 12px;
-    max-width: 85%;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font-size: 14px;
-  }
-
-  .busbot-bot {
-    background: white;
-    border: 1px solid #ddd;
-  }
-
-  .busbot-user {
-    background: #d5f5e8;
-    margin-left: auto;
-  }
-
-  #busbot-form {
-    display: flex;
-    padding: 8px;
-    gap: 6px;
-    border-top: 1px solid #ddd;
-  }
-
-  #busbot-input {
-    min-width: 0;
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 14px;
-  }
-
-  #busbot-form button {
-    background: #087f5b;
-    color: white;
-    border: 0;
-    border-radius: 8px;
-    padding: 10px;
-    cursor: pointer;
-  }
-</style>
-
-<button id="busbot-button" type="button"
-  aria-label="Open BusSaathi chatbot">
-  💬 Bus Help
-</button>
-
-<div id="busbot" role="dialog" aria-label="BusSaathi chatbot">
-  <div id="busbot-header">
-    <span>🚌 BusSaathi Help</span>
-    <button id="busbot-close" type="button"
-      aria-label="Close chatbot">×</button>
-  </div>
-
-  <div id="busbot-messages" aria-live="polite">
-    <div class="busbot-msg busbot-bot">
-      Namaste! 👋 Main BusSaathi Help Bot hoon.
-      Bus route, stops, timing ya live tracking ke baare mein poochho.
-    </div>
-  </div>
-
-  <form id="busbot-form">
-    <input id="busbot-input" type="text"
-      placeholder="Apna sawal likho..."
-      aria-label="Type your question" required>
-    <button type="submit">Send</button>
-  </form>
-</div>
-
-<script>
-(function () {
-  const button = document.getElementById("busbot-button");
-  const panel = document.getElementById("busbot");
-  const close = document.getElementById("busbot-close");
-  const form = document.getElementById("busbot-form");
-  const input = document.getElementById("busbot-input");
-  const messages = document.getElementById("busbot-messages");
-
-  button.addEventListener("click", function () {
-    panel.style.display = "block";
-    input.focus();
-  });
-
-  close.addEventListener("click", function () {
-    panel.style.display = "none";
-  });
-
-  function addMessage(text, type) {
-    const div = document.createElement("div");
-    div.className = "busbot-msg " +
-      (type === "user" ? "busbot-user" : "busbot-bot");
-    div.textContent = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  function getReply(question) {
-    const q = question.toLowerCase();
-
-    if (q.includes("hello") || q.includes("hi") ||
-        q.includes("namaste") || q.includes("hii")) {
-      return "Namaste bhai! 😊 BusSaathi mein aapka swagat hai. Bus se kya jaanna hai?";
-    }
-
-    if (q.includes("live") || q.includes("location") ||
-        q.includes("kahan") || q.includes("kaha")) {
-      return "Live bus location tabhi milegi jab driver ka GPS aur Firebase tracking connect ho. Ye bot abhi live location access nahi karta.";
-    }
-
-    if (q.includes("time") || q.includes("timing") ||
-        q.includes("late") || q.includes("kab")) {
-      return "Bus ki exact timing abhi system mein available nahi hai. Apne bus driver ya college transport office se confirm karein.";
-    }
-
-    if (q.includes("stop") || q.includes("station") ||
-        q.includes("ruke")) {
-      return "Bus stops ki sahi jaankari ke liye website par selected route dekhein. Agar route ki details nahi dikh rahi hain, transport office se confirm karein.";
-    }
-
-    if (q.includes("route") || q.includes("rasta")) {
-      return "BusSaathi website par route select karke map dekh sakte hain. Map par dikhne wala sample route actual bus route hona zaroori nahi hai.";
-    }
-
-    if (q.includes("driver") || q.includes("contact") ||
-        q.includes("phone") || q.includes("number")) {
-      return "Driver ka verified contact number abhi chatbot mein add nahi hai. College transport office se number lein.";
-    }
-
-    if (q.includes("help") || q.includes("madad")) {
-      return "Aap ye pooch sakte hain:\n• Bus kahan hai?\n• Bus kab aayegi?\n• Bus ke stops kya hain?\n• Route kaise dekhein?";
-    }
-
-    return "Maaf kijiye bhai, mujhe iska jawab nahi pata. Aap 'route', 'timing', 'stops', 'live location' ya 'help' pooch kar dekhein.";
-  }
-
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
-    const question = input.value.trim();
-
-    if (!question) return;
-
-    addMessage(question, "user");
-    addMessage(getReply(question), "bot");
-    input.value = "";
-    input.focus();
-  });
-})();
-</script>
-  
-<!-- ================= BUSSAATHI DEVELOPER PROFILE ================= -->
-<style>
-  #bs-dev-section {
-    --bs-bg: #080d18;
-    --bs-card: #0d1625;
-    --bs-green: #5ef0b5;
-    --bs-muted: #9babc0;
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    margin-top: 48px;
-    padding: 64px 18px 0;
-    color: #f4f8ff;
-    background:
-      radial-gradient(ellipse at 50% 0%, #123d3545, transparent 58%),
-      var(--bs-bg);
-    font-family: Inter, system-ui, Arial, sans-serif;
-  }
-
-  #bs-dev-section * {
-    box-sizing: border-box;
-  }
-
-  #bs-dev-section .bs-dev-container {
-    position: relative;
-    max-width: 980px;
-    margin: auto;
-  }
-
-  #bs-dev-section .bs-dev-eyebrow {
-    color: var(--bs-green);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-
-  #bs-dev-section .bs-dev-heading {
-    margin: 12px 0;
-    color: #fff;
-    font-size: clamp(28px, 5vw, 43px);
-    line-height: 1.2;
-    text-align: center;
-  }
-
-  #bs-dev-section .bs-dev-subheading {
-    max-width: 510px;
-    margin: 0 auto 30px;
-    color: var(--bs-muted);
-    font-size: 14px;
-    line-height: 1.8;
-    text-align: center;
-  }
-
-  #bs-dev-section .bs-dev-card {
-    position: relative;
-    max-width: 620px;
-    margin: auto;
-    padding: 35px 22px;
-    overflow: hidden;
-    border: 1px solid #5ef0b52c;
-    border-radius: 25px;
-    background: linear-gradient(145deg, #12202e, #0b111d 70%);
-    box-shadow: 0 0 35px #39d9a00c, inset 0 1px #ffffff08;
-    text-align: center;
-    transition: border-color .3s, box-shadow .3s, transform .3s;
-  }
-
-  #bs-dev-section .bs-dev-card:hover {
-    border-color: #5ef0b580;
-    box-shadow: 0 0 38px #39d9a01c;
-    transform: translateY(-3px);
-  }
-
-  #bs-dev-section .bs-dev-avatar {
-    display: grid;
-    width: 104px;
-    height: 104px;
-    place-items: center;
-    margin: 0 auto 20px;
-    border: 2px solid var(--bs-green);
-    border-radius: 50%;
-    background: radial-gradient(circle, #194d40, #0c211f);
-    box-shadow: 0 0 25px #5ef0b52a, inset 0 0 20px #5ef0b515;
-    color: var(--bs-green);
-    font-size: 37px;
-    font-weight: 800;
-    animation: bs-glow 3s ease-in-out infinite;
-  }
-
-  @keyframes bs-glow {
-    0%, 100% { box-shadow: 0 0 18px #5ef0b51c; }
-    50% { box-shadow: 0 0 32px #5ef0b548; }
-  }
-
-  #bs-dev-section .bs-dev-name {
-    margin: 10px 0;
-    color: #fff;
-    font-size: clamp(29px, 5vw, 38px);
-    font-weight: 800;
-    letter-spacing: -.8px;
-  }
-
-  #bs-dev-section .bs-dev-role {
-    margin: 0;
-    color: #b7c7d8;
-    font-size: 14px;
-  }
-
-  #bs-dev-section .bs-dev-tags {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 9px;
-    margin: 22px 0;
-  }
-
-  #bs-dev-section .bs-dev-tag {
-    padding: 8px 12px;
-    border: 1px solid #5ef0b526;
-    border-radius: 30px;
-    background: #5ef0b50c;
-    color: #82f5c9;
-    font-size: 12px;
-  }
-
-  #bs-dev-section .bs-dev-bio {
-    max-width: 400px;
-    margin: 0 auto 25px;
-    color: var(--bs-muted);
-    font-size: 14px;
-    line-height: 1.8;
-  }
-
-  #bs-dev-section .bs-dev-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-  }
-
-  #bs-dev-section .bs-dev-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    min-height: 46px;
-    padding: 12px 17px;
-    border: 1px solid transparent;
-    border-radius: 11px;
-    font-size: 13px;
-    font-weight: 750;
-    text-decoration: none;
-    transition: transform .2s, background .2s;
-  }
-
-  #bs-dev-section .bs-dev-btn:hover {
-    transform: translateY(-2px);
-  }
-
-  #bs-dev-section .bs-dev-btn-primary {
-    background: var(--bs-green);
-    color: #07140f;
-  }
-
-  #bs-dev-section .bs-dev-btn-primary:hover {
-    background: #9bffd7;
-  }
-
-  #bs-dev-section .bs-dev-btn-secondary {
-    border-color: #35475b;
-    background: #ffffff05;
-    color: #e6edf7;
-  }
-
-  #bs-dev-section .bs-dev-btn-secondary:hover {
-    background: #ffffff10;
-  }
-
-  #bs-dev-section .bs-dev-footer {
-    margin-top: 48px;
-    padding: 23px 12px;
-    border-top: 1px solid #ffffff12;
-    color: #8291a6;
-    font-size: 12px;
-    line-height: 1.9;
-    text-align: center;
-  }
-
-  #bs-dev-section .bs-dev-footer strong {
-    color: #c2d1df;
-  }
-
-  #bs-dev-section .bs-dev-footer span {
-    color: var(--bs-green);
-  }
-
-  @media (max-width: 480px) {
-    #bs-dev-section {
-      padding: 44px 14px 0;
-    }
-
-    #bs-dev-section .bs-dev-card {
-      padding: 29px 16px;
-      border-radius: 20px;
-    }
-
-    #bs-dev-section .bs-dev-actions {
-      flex-direction: column;
-    }
-
-    #bs-dev-section .bs-dev-btn {
-      width: 100%;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #bs-dev-section *,
-    #bs-dev-section *::before,
-    #bs-dev-section *::after {
-      animation: none !important;
-      transition: none !important;
-    }
-  }
-</style>
-
-<section id="bs-dev-section" aria-labelledby="bs-dev-title">
-  <div class="bs-dev-container">
-
-    <div style="text-align:center">
-      <div class="bs-dev-eyebrow">The mind behind the mission</div>
-      <h2 class="bs-dev-heading" id="bs-dev-title">
-        Meet the <span style="color:#5ef0b5">Developer</span>
-      </h2>
-      <p class="bs-dev-subheading">
-        Building smarter journeys through technology.
-        Welcome to the world of BusSaathi.
-      </p>
-    </div>
-
-    <article class="bs-dev-card">
-      <div class="bs-dev-avatar" aria-label="Nitin initials">N</div>
-
-      <div class="bs-dev-eyebrow">BUSSAATHI CREATOR</div>
-      <h3 class="bs-dev-name">Nitin<span style="color:#5ef0b5">.</span></h3>
-      <p class="bs-dev-role">Student Developer · Computer Science Engineering</p>
-
-      <div class="bs-dev-tags">
-        <span class="bs-dev-tag">✦ Web Development</span>
-        <span class="bs-dev-tag">⌘ Problem Solving</span>
-        <span class="bs-dev-tag">↗ Learning & Building</span>
-      </div>
-
-      <p class="bs-dev-bio">
-        Passionate about technology and creating useful digital experiences.
-        BusSaathi is built with a vision to make college bus travel simpler
-        and smarter.
-      </p>
-
-      <div class="bs-dev-actions">
-        <a
-          class="bs-dev-btn bs-dev-btn-primary"
-          href="https://github.com/code-is-love9601"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Visit Nitin's GitHub profile"
-        >
-          <svg width="19" height="19" viewBox="0 0 24 24"
-               fill="currentColor" aria-hidden="true">
-            <path d="M12 .9a11.1 11.1 0 0 0-3.51 21.63c.55.1.76-.24.76-.54v-2.08c-3.1.67-3.76-1.32-3.76-1.32-.5-1.29-1.24-1.63-1.24-1.63-1.01-.69.08-.68.08-.68 1.12.08 1.71 1.15 1.71 1.15.99 1.7 2.6 1.21 3.23.93.1-.72.39-1.21.7-1.49-2.47-.28-5.07-1.24-5.07-5.49 0-1.21.43-2.2 1.15-2.98-.12-.28-.5-1.41.11-2.94 0 0 .94-.3 3.05 1.14a10.6 10.6 0 0 1 5.55 0c2.11-1.44 3.04-1.14 3.04-1.14.61 1.53.23 2.66.12 2.94.71.78 1.14 1.77 1.14 2.98 0 4.26-2.61 5.2-5.1 5.48.4.35.75 1.02.75 2.06v3.07c0 .3.2.65.77.54A11.1 11.1 0 0 0 12 .9Z"/>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">SMART COLLEGE COMMUTE</span>
+          <h1>Your Journey,<br><span>Smarter.</span></h1>
+          <p class="hero-copy">
+            Explore your college bus routes, check stops on the map
+            and view estimated arrival times — all in one place.
+          </p>
+
+          <div class="search-row">
+            <select class="route-select" id="heroRoute" aria-label="Select bus route">
+              <option value="village">⌁ &nbsp; Village Route</option>
+              <option value="town">⌁ &nbsp; Town Route</option>
+            </select>
+            <button class="btn" id="heroTrackBtn">Track Bus →</button>
+          </div>
+
+          <div class="hero-stats">
+            <div><strong>⌖ Route Map</strong>Explore bus stops</div>
+            <div><strong>◷ ETA Updates</strong>Sample estimates</div>
+            <div><strong>◇ Student First</strong>Simple and useful</div>
+          </div>
+        </div>
+
+        <div class="hero-art" aria-label="BusSaathi college bus illustration">
+          <svg class="bus-illustration" viewBox="0 0 560 340" role="img" aria-label="Illustration of a green college bus">
+            <defs>
+              <linearGradient id="busBody" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#00f5a0"/>
+                <stop offset=".55" stop-color="#00b97c"/>
+                <stop offset="1" stop-color="#087b64"/>
+              </linearGradient>
+              <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+                <stop stop-color="#173e57"/>
+                <stop offset="1" stop-color="#061321"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="280" cy="295" rx="220" ry="24" fill="#000" opacity=".45"/>
+            <path d="M88 83 Q88 57 119 57 L392 57 Q427 57 445 94 L489 187 L489 250 Q489 270 465 276 L105 276 Q79 271 79 247 L79 113 Q79 94 88 83Z" fill="url(#busBody)" stroke="#5dffd0" stroke-width="2"/>
+            <path d="M106 77 L387 77 Q407 77 421 100 L445 145 L105 145Z" fill="url(#glass)" stroke="#17485b" stroke-width="3"/>
+            <path d="M120 87 L185 87 L185 135 L120 135Z" fill="#102e44"/>
+            <path d="M193 87 L260 87 L260 135 L193 135Z" fill="#102e44"/>
+            <path d="M268 87 L335 87 L335 135 L268 135Z" fill="#102e44"/>
+            <path d="M343 87 L383 87 Q399 87 410 107 L426 135 L343 135Z" fill="#102e44"/>
+            <path d="M442 155 L466 196 L466 244 L442 244Z" fill="#061827" stroke="#15394b" stroke-width="3"/>
+            <path d="M107 157 L429 157 L429 244 L107 244Z" fill="#087d62" opacity=".7"/>
+            <path d="M185 157 L185 243 M264 157 L264 243 M343 157 L343 243" stroke="#73ffd1" stroke-width="2" opacity=".65"/>
+            <path d="M107 253 L467 253" stroke="#003b37" stroke-width="8"/>
+            <rect x="118" y="168" width="56" height="46" rx="5" fill="#0b2939" stroke="#72ffcf"/>
+            <text x="146" y="187" fill="#00f5a0" font-size="10" font-weight="bold" text-anchor="middle">BUS</text>
+            <text x="146" y="202" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">SAATHI</text>
+            <rect x="416" y="211" width="32" height="19" rx="4" fill="#fff3b0"/>
+            <rect x="451" y="211" width="22" height="19" rx="4" fill="#ffbf62"/>
+            <rect x="88" y="215" width="15" height="30" rx="4" fill="#ff4646"/>
+            <circle cx="160" cy="272" r="30" fill="#06101a" stroke="#203b4c" stroke-width="5"/>
+            <circle cx="160" cy="272" r="14" fill="#8da3b4"/>
+            <circle cx="160" cy="272" r="5" fill="#0b2130"/>
+            <circle cx="405" cy="272" r="30" fill="#06101a" stroke="#203b4c" stroke-width="5"/>
+            <circle cx="405" cy="272" r="14" fill="#8da3b4"/>
+            <circle cx="405" cy="272" r="5" fill="#0b2130"/>
+            <path d="M226 26 L324 26" stroke="#00f5a0" stroke-width="2" stroke-dasharray="5 5"/>
+            <text x="275" y="18" text-anchor="middle" fill="#b7ffe6" font-size="13" font-weight="bold">BETTER ROUTES · BETTER DAYS</text>
+            <rect x="200" y="99" width="130" height="28" rx="7" fill="#041523" stroke="#00f5a0"/>
+            <text x="265" y="118" fill="#00f5a0" font-size="17" font-weight="bold" text-anchor="middle">BusSaathi</text>
           </svg>
-          View GitHub
-        </a>
-
-        <a
-          class="bs-dev-btn bs-dev-btn-secondary"
-          href="mailto:nitint3x9601@gmail.com"
-          aria-label="Email Nitin"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="1.8"
-               aria-hidden="true">
-            <rect x="3" y="5" width="18" height="14" rx="2"/>
-            <path d="m4 7 8 6 8-6"/>
-          </svg>
-          Contact Developer
-        </a>
+          <div class="art-caption">✦ Smarter college journeys</div>
+        </div>
       </div>
-    </article>
+    </section>
 
-  </div>
+    <section id="features">
+      <div class="container">
+        <h2 class="section-title">Explore Our <span>Features</span></h2>
+        <div class="title-line"></div>
+        <p class="section-subtitle">Everything you need for a simpler college commute.</p>
 
-  <footer class="bs-dev-footer">
-    <div>
-      <strong>BusSaathi</strong> · Smart College Bus Tracking
-    </div>
-    <div>
-      Designed &amp; Developed with <span>♥</span> by Nitin
-    </div>
-    <div>
-      © <span id="bs-dev-year">2026</span> BusSaathi. All rights reserved.
-    </div>
-  </footer>
-</section>
-
-<script>
-  (function () {
-    var yearElement = document.getElementById("bs-dev-year");
-    if (yearElement) {
-      yearElement.textContent = new Date().getFullYear();
-    }
-  })();
-</script>
-<!-- ================= END DEVELOPER PROFILE ================= -->
-
-</body>
-</html>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon">⌖</div>
+            <h3>Track Your Bus</h3>
+            <p>Explore the selected route and its stops on an interactive map.</p>
+            <a class="text-link" href="#track">View Map →</a>
+          </article>
+          <article class="feature-car
