@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +26,51 @@ body{
   font-family:Arial,Helvetica,sans-serif;line-height:1.5
 }
 a{color:inherit;text-decoration:none}
+
+/* Preloader Styles */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.loader-box {
+  text-align: center;
+}
+.loader-icon {
+  font-size: 50px;
+  animation: bounce 1.2s infinite alternate;
+}
+.loader-logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--green);
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+.loader-text {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+@keyframes bounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-15px) scale(1.05); }
+}
+.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
 header{
   position:sticky;top:0;z-index:1000;
   display:flex;align-items:center;justify-content:space-between;
@@ -112,6 +156,16 @@ footer{text-align:center;color:var(--muted);padding:25px}
 </head>
 
 <body>
+
+<!-- Live Tracking Loading Screen / Preloader -->
+<div id="preloader">
+  <div class="loader-box">
+    <div class="loader-icon">🚌</div>
+    <div class="loader-logo">BusSaathi</div>
+    <div class="loader-text">Connecting Live Bus Routes...</div>
+  </div>
+</div>
+
 <header>
   <a class="logo" href="#home">🚌 BusSaathi</a>
   <nav>
@@ -479,9 +533,18 @@ function sendChat(event) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-/* Start only after the page and map container exist. */
+/* Start only after the page and map container exist, and hide preloader. */
 window.addEventListener("load", function() {
   initialiseMap();
+
+  // Hide Preloader smoothly
+  const preloader = document.getElementById("preloader");
+  if (preloader) {
+    preloader.classList.add("fade-out");
+    setTimeout(function() {
+      preloader.style.display = "none";
+    }, 500);
+  }
 });
 </script>
 </body>
