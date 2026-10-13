@@ -485,6 +485,216 @@ function stopGPS() {
 // Load the default route
 changeRoute();
 </script>
+<!-- BusSaathi Simple Chatbot -->
+<style>
+  #busbot-button {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 9999;
+    border: 0;
+    border-radius: 50px;
+    padding: 14px 20px;
+    background: #087f5b;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 14px #0003;
+  }
 
+  #busbot {
+    display: none;
+    position: fixed;
+    right: 16px;
+    bottom: 80px;
+    z-index: 9999;
+    width: min(340px, calc(100vw - 32px));
+    height: 430px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 25px #0003;
+    font-family: Arial, sans-serif;
+    color: #222;
+  }
+
+  #busbot-header {
+    background: #087f5b;
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #busbot-close {
+    background: none;
+    border: 0;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  #busbot-messages {
+    height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+    background: #f5f7f7;
+  }
+
+  .busbot-msg {
+    padding: 10px 12px;
+    margin: 8px 0;
+    border-radius: 12px;
+    max-width: 85%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+  }
+
+  .busbot-bot {
+    background: white;
+    border: 1px solid #ddd;
+  }
+
+  .busbot-user {
+    background: #d5f5e8;
+    margin-left: auto;
+  }
+
+  #busbot-form {
+    display: flex;
+    padding: 8px;
+    gap: 6px;
+    border-top: 1px solid #ddd;
+  }
+
+  #busbot-input {
+    min-width: 0;
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  #busbot-form button {
+    background: #087f5b;
+    color: white;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+  }
+</style>
+
+<button id="busbot-button" type="button"
+  aria-label="Open BusSaathi chatbot">
+  💬 Bus Help
+</button>
+
+<div id="busbot" role="dialog" aria-label="BusSaathi chatbot">
+  <div id="busbot-header">
+    <span>🚌 BusSaathi Help</span>
+    <button id="busbot-close" type="button"
+      aria-label="Close chatbot">×</button>
+  </div>
+
+  <div id="busbot-messages" aria-live="polite">
+    <div class="busbot-msg busbot-bot">
+      Namaste! 👋 Main BusSaathi Help Bot hoon.
+      Bus route, stops, timing ya live tracking ke baare mein poochho.
+    </div>
+  </div>
+
+  <form id="busbot-form">
+    <input id="busbot-input" type="text"
+      placeholder="Apna sawal likho..."
+      aria-label="Type your question" required>
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<script>
+(function () {
+  const button = document.getElementById("busbot-button");
+  const panel = document.getElementById("busbot");
+  const close = document.getElementById("busbot-close");
+  const form = document.getElementById("busbot-form");
+  const input = document.getElementById("busbot-input");
+  const messages = document.getElementById("busbot-messages");
+
+  button.addEventListener("click", function () {
+    panel.style.display = "block";
+    input.focus();
+  });
+
+  close.addEventListener("click", function () {
+    panel.style.display = "none";
+  });
+
+  function addMessage(text, type) {
+    const div = document.createElement("div");
+    div.className = "busbot-msg " +
+      (type === "user" ? "busbot-user" : "busbot-bot");
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function getReply(question) {
+    const q = question.toLowerCase();
+
+    if (q.includes("hello") || q.includes("hi") ||
+        q.includes("namaste") || q.includes("hii")) {
+      return "Namaste bhai! 😊 BusSaathi mein aapka swagat hai. Bus se kya jaanna hai?";
+    }
+
+    if (q.includes("live") || q.includes("location") ||
+        q.includes("kahan") || q.includes("kaha")) {
+      return "Live bus location tabhi milegi jab driver ka GPS aur Firebase tracking connect ho. Ye bot abhi live location access nahi karta.";
+    }
+
+    if (q.includes("time") || q.includes("timing") ||
+        q.includes("late") || q.includes("kab")) {
+      return "Bus ki exact timing abhi system mein available nahi hai. Apne bus driver ya college transport office se confirm karein.";
+    }
+
+    if (q.includes("stop") || q.includes("station") ||
+        q.includes("ruke")) {
+      return "Bus stops ki sahi jaankari ke liye website par selected route dekhein. Agar route ki details nahi dikh rahi hain, transport office se confirm karein.";
+    }
+
+    if (q.includes("route") || q.includes("rasta")) {
+      return "BusSaathi website par route select karke map dekh sakte hain. Map par dikhne wala sample route actual bus route hona zaroori nahi hai.";
+    }
+
+    if (q.includes("driver") || q.includes("contact") ||
+        q.includes("phone") || q.includes("number")) {
+      return "Driver ka verified contact number abhi chatbot mein add nahi hai. College transport office se number lein.";
+    }
+
+    if (q.includes("help") || q.includes("madad")) {
+      return "Aap ye pooch sakte hain:\n• Bus kahan hai?\n• Bus kab aayegi?\n• Bus ke stops kya hain?\n• Route kaise dekhein?";
+    }
+
+    return "Maaf kijiye bhai, mujhe iska jawab nahi pata. Aap 'route', 'timing', 'stops', 'live location' ya 'help' pooch kar dekhein.";
+  }
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    addMessage(question, "user");
+    addMessage(getReply(question), "bot");
+    input.value = "";
+    input.focus();
+  });
+})();
+</script>
 </body>
 </html>
