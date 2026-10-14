@@ -393,7 +393,50 @@ footer{text-align:center;color:var(--muted);padding:25px}
  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  crossorigin="">
 </script>
+/* Finish chatbot reply */
+function handleChatSubmit(e) {
+  e.preventDefault();
 
+  const input = document.getElementById("userInput");
+  const body = document.getElementById("chatBody");
+
+  if (!input || !input.value.trim()) return;
+
+  const userText = input.value.trim();
+
+  const userMsg = document.createElement("div");
+  userMsg.className = "chat-msg-user";
+  userMsg.textContent = userText;
+  body.appendChild(userMsg);
+
+  input.value = "";
+  body.scrollTop = body.scrollHeight;
+
+  setTimeout(() => {
+    const botMsg = document.createElement("div");
+    botMsg.className = "chat-msg-bot";
+    botMsg.innerHTML = "Main aapka sawaal samajh raha hoon! Bus timing, stops, GPS ya project ke baare me poochiye.";
+    body.appendChild(botMsg);
+    body.scrollTop = body.scrollHeight;
+  }, 700);
+}
+
+/* Hide preloader and start the Leaflet map */
+window.addEventListener("load", function () {
+  checkSpecialEvents();
+
+  const preloader = document.getElementById("preloader");
+
+  if (preloader) {
+    preloader.classList.add("hide-preloader");
+
+    setTimeout(function () {
+      preloader.style.display = "none";
+    }, 600);
+  }
+
+  initialiseMap();
+});
 <script>
 "use strict";
 
