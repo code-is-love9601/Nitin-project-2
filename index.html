@@ -75,6 +75,18 @@ footer{text-align:center;color:var(--muted);padding:25px}
 .area-marker{width:15px;height:15px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px #555}
 .popup-btn{width:100%;margin-top:6px;padding:8px;background:#1677e8;color:#fff;border:none;font-weight:bold;font-size:13px}
 
+/* Bus info inside map popups */
+.leaflet-popup-content{margin:12px 14px;min-width:210px}
+.pop-scroll{max-height:240px;overflow-y:auto;padding-right:4px}
+.pop-title{font-size:15px;margin-bottom:2px}
+.pop-sub{color:#555;font-size:12px;margin-bottom:6px}
+.bus-card{border:1px solid #d5dde3;border-left:4px solid #00a86b;border-radius:8px;padding:7px 9px;margin:7px 0;background:#f6fbf9;font-size:12.5px;line-height:1.45;color:#222}
+.bus-no{font-weight:bold;color:#00724a;font-size:13.5px}
+.bus-serial{display:inline-block;background:#00a86b;color:#fff;border-radius:10px;padding:0 8px;font-size:11.5px;margin-left:4px}
+.bus-route{color:#555;font-size:11.5px}
+.bus-call{color:#1677e8;font-weight:bold;text-decoration:underline}
+.no-bus{color:#777;font-size:12.5px;margin:6px 0}
+
 /* Chat */
 #chatToggle{position:fixed;right:25px;bottom:25px;width:60px;height:60px;background:#00a86b;color:#fff;border:none;border-radius:50%;font-size:26px;box-shadow:0 5px 20px rgba(0,0,0,.4);z-index:99999;display:flex;align-items:center;justify-content:center;transition:transform .2s;padding:0}
 #chatToggle:hover{transform:scale(1.1)}
@@ -103,8 +115,6 @@ footer{text-align:center;color:var(--muted);padding:25px}
   </div>
 </div>
 
-<!-- FIX: separate, independent script so the preloader ALWAYS hides,
-     even if Leaflet or the main script fails -->
 <script>
 (function () {
   function hidePreloader() {
@@ -149,7 +159,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
       <div class="route-row">
         <div>
           <h2>📍 Track Your Bus</h2>
-          <p class="muted">Choose a route to see its stops and sample timings.</p>
+          <p class="muted">Choose a route to see its stops and sample timings. Tap any dot on the map to see buses, stop serial no. and driver contact.</p>
         </div>
         <label>Bus route<br>
           <select id="route" onchange="changeRoute()">
@@ -223,7 +233,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
     <section class="info" id="about">
       <h2>💡 About BusSaathi</h2>
       <p class="muted">BusSaathi is a student project prototype designed to help college students explore transport routes and stops.</p>
-      <p class="muted">Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.</p>
+      <p class="muted">Note: routes, arrival times, bus numbers, driver names and contact numbers are sample/demo data. This prototype is not connected to a real bus fleet.</p>
     </section>
     <section class="info" id="developer">
       <h2>👨‍💻 Meet the Developer</h2>
@@ -276,6 +286,26 @@ const routeData = {
   }
 };
 
+/* ---------- BUS DATA (SAMPLE / DEMO) ----------
+   Each bus has: number, route name, driver, contact and an ordered `stops` list.
+   Stop serial number = position in that list (1, 2, 3...).
+   Stop names MUST match a `name` in the `places` array below.
+   To add a bus: copy one object, change the values, add a comma. */
+const buses = [
+  { no: "UP53 BS 101", route: "Pali – Sahjanwa – ITM GIDA", driver: "Ramesh Yadav", phone: "9812345601",
+    stops: ["Pali", "Sahjanwa", "Sihapar", "Jagdishpur", "Kalesar", "ITM GIDA"] },
+  { no: "UP53 BS 102", route: "MMMUT – City – ITM GIDA", driver: "Suresh Chaurasia", phone: "9812345602",
+    stops: ["MMMUT", "AIIMS Gorakhpur", "Medical Road", "Gorakhpur University", "Golghar", "GIDA Sector 7", "ITM GIDA"] },
+  { no: "UP53 BS 103", route: "Gorakhnath – GIDA Industrial", driver: "Mukesh Pandey", phone: "9812345603",
+    stops: ["Gorakhnath Temple", "Geeta Press", "Gorakhpur Railway Station", "Mohaddipur", "Kushmi Forest", "GIDA Sector 7", "GIDA Sector 22", "GIDA Phase 1"] },
+  { no: "UP53 BS 104", route: "Ramgarh Tal – MMMUT – Goal Ghar", driver: "Anil Tripathi", phone: "9812345604",
+    stops: ["Ramgarh Tal", "Nauka Vihar", "AIIMS Gorakhpur", "MMMUT", "Medical Road", "Golghar"] },
+  { no: "UP53 BS 105", route: "Gorakhpur Route (MMMUT → Goal Ghar)", driver: "Dinesh Gupta", phone: "9812345605",
+    stops: ["MMMUT", "Medical Road", "Golghar"] },
+  { no: "UP53 BS 106", route: "Reverse Route (Goal Ghar → MMMUT)", driver: "Vijay Singh", phone: "9812345606",
+    stops: ["Golghar", "Medical Road", "MMMUT"] }
+];
+
 /* AREA LOCATIONS: add new places inside the `places` array (comma after each entry except last) */
 const itm = { name: "ITM GIDA", area: "Institute of Technology and Management", lat: 26.74296, lng: 83.27327, color: "#ff1744", destination: true };
 
@@ -314,6 +344,45 @@ const $ = id => document.getElementById(id);
 function goTo(id) { $(id).scrollIntoView({ behavior: "smooth" }); }
 function setMapStatus(msg) { $("mapStatus").textContent = msg; }
 
+/* ---------- BUS INFO HELPERS ---------- */
+// All buses that stop at a place, with that place's serial number on the bus route
+function busesAtStop(placeName) {
+  const out = [];
+  buses.forEach(b => {
+    const idx = b.stops.indexOf(placeName);
+    if (idx !== -1) out.push({ bus: b, serial: idx + 1, total: b.stops.length });
+  });
+  return out;
+}
+
+function busPopupHTML(p) {
+  const list = busesAtStop(p.name);
+  let html = '<div class="pop-title"><b>' + p.name + '</b></div><div class="pop-sub">' + p.area + '</div>';
+  if (p.destination) html += '<div class="pop-sub"><b>Destination</b></div>';
+
+  html += '<div class="pop-scroll">';
+  if (!list.length) {
+    html += '<div class="no-bus">No bus assigned to this stop yet.</div>';
+  } else {
+    html += '<div class="pop-sub"><b>' + list.length + ' bus(es) stop here</b></div>';
+    list.forEach(item => {
+      const b = item.bus;
+      html += '<div class="bus-card">' +
+        '<span class="bus-no">🚌 ' + b.no + '</span><span class="bus-serial">Stop ' + item.serial + '/' + item.total + '</span><br>' +
+        '<span class="bus-route">' + b.route + '</span><br>' +
+        '👤 Driver: <b>' + b.driver + '</b><br>' +
+        '📞 <a class="bus-call" href="tel:+91' + b.phone + '">+91 ' + b.phone + '</a>' +
+        '</div>';
+    });
+  }
+  html += '</div>';
+
+  if (!p.destination) {
+    html += '<button class="popup-btn" onclick="selectAreaRoute(\'' + p.name + '\')">Route to ITM</button>';
+  }
+  return html;
+}
+
 function initialiseMap() {
   if (typeof L === "undefined") {
     setMapStatus("Map library could not load. Check your internet connection.");
@@ -329,7 +398,7 @@ function initialiseMap() {
     initAreas();
     renderRoute();
     fitRoute();
-    setMapStatus("Map powered by OpenStreetMap and Leaflet.");
+    setMapStatus("Map powered by OpenStreetMap and Leaflet. Tap a dot to see bus & driver details.");
     setTimeout(() => { if (map) map.invalidateSize(); }, 300);
   } catch (err) {
     console.error("Map initialisation error:", err);
@@ -384,9 +453,7 @@ function initAreas() {
       iconAnchor: p.destination ? [12, 12] : [7, 7]
     });
     const marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
-    const btn = p.destination ? "<br><b>Destination</b>" :
-      '<button class="popup-btn" onclick="selectAreaRoute(\'' + p.name + '\')">Route to ITM</button>';
-    marker.bindPopup("<b>" + p.name + "</b><br>" + p.area + btn);
+    marker.bindPopup(busPopupHTML(p), { maxWidth: 280 });
     areaMarkers.set(p.name, marker);
   });
 
@@ -532,6 +599,22 @@ function saathiReply(q) {
   q = q.toLowerCase();
   const stops = r => routeData[r].stops.map(s => s.name + " (" + s.time + ")").join(" → ");
   if (/hi\b|hello|namaste|hey/.test(q)) return "Namaste! Bus timing, stops ya route ke baare me poochiye. 🚌";
+
+  // Bus number / driver / contact lookup
+  if (/bus ?(no|number|list)|buses|driver (name|no)|contact|phone|number|naam/.test(q)) {
+    // If a stop name is mentioned, show buses for that stop
+    const place = places.find(p => q.includes(p.name.toLowerCase()));
+    if (place) {
+      const list = busesAtStop(place.name);
+      if (!list.length) return place.name + " par abhi koi bus assigned nahi hai.";
+      return place.name + " par ye buses aati hain:\n" + list.map(i =>
+        i.bus.no + " (Stop " + i.serial + "/" + i.total + ") — " + i.bus.driver + ", " + i.bus.phone).join("\n") +
+        "\n(Sample data)";
+    }
+    return "Saari buses:\n" + buses.map(b => b.no + " — " + b.driver + ", " + b.phone).join("\n") +
+      "\n(Sample data) Kisi stop ka naam likhiye ya map par dot tap kijiye.";
+  }
+
   if (/mmmut/.test(q)) return "MMMUT bus: " + stops("gorakhpur") + "\nYe sample timing hai, live nahi.";
   if (/goal ?ghar|golghar/.test(q)) return "Goal Ghar se: " + stops("reverse") + "\nYe sample timing hai.";
   if (/medical/.test(q)) return "Medical Road dono routes me 08:12 par aata hai (sample timing).";
@@ -540,7 +623,7 @@ function saathiReply(q) {
   if (/stop/.test(q)) return "Route 1: " + stops("gorakhpur") + "\nRoute 2: " + stops("reverse");
   if (/delay|traffic/.test(q)) return "Abhi live traffic data connected nahi hai. Ye prototype hai, isliye delay info available nahi.";
   if (/gps|driver/.test(q)) return "Driver Mode me 'Start GPS Test' dabaiye aur location permission allow kijiye.";
-  return "Maaf kijiye, samajh nahi aaya. Aap MMMUT, Medical Road, Goal Ghar, timing ya stops ke baare me poochh sakte hain. 🚌";
+  return "Maaf kijiye, samajh nahi aaya. Aap MMMUT, Medical Road, Goal Ghar, timing, stops ya bus number ke baare me poochh sakte hain. 🚌";
 }
 
 function handleChatSubmit(e) {
