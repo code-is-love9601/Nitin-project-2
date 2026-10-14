@@ -149,7 +149,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
       <div class="route-row">
         <div>
           <h2>📍 Track Your Bus</h2>
-          <p class="muted">Choose a route to see its stops on the map.</p>
+          <p class="muted">Choose a route to see its stops and sample timings.</p>
         </div>
         <label>Bus route<br>
           <select id="route" onchange="changeRoute()">
@@ -192,7 +192,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
       <div class="actions">
         <button class="primary" onclick="showAllStops()">☷ View All Stops</button>
-        <button onclick="fitRoute()">⛶ Fit Route on Map</button>
+        <button onclick="fitRoute()">⛶ Fit Map to All Areas</button>
       </div>
     </section>
 
@@ -303,7 +303,7 @@ const places = [
   { name: "AIIMS Gorakhpur", area: "Medical Institution", lat: 26.7280, lng: 83.4080, color: "#455a64" }
 ];
 
-let map = null, routeLine = null, stopMarkers = [];
+let map = null;
 let gpsMarker = null, gpsCircle = null, watchId = null;
 let currentRoute = "gorakhpur";
 const areaMarkers = new Map();
@@ -328,6 +328,7 @@ function initialiseMap() {
     }).addTo(map);
     initAreas();
     renderRoute();
+    fitRoute();
     setMapStatus("Map powered by OpenStreetMap and Leaflet.");
     setTimeout(() => { if (map) map.invalidateSize(); }, 300);
   } catch (err) {
@@ -344,24 +345,16 @@ function renderStopsList() {
 }
 
 function renderRoute() {
+  // Bus route line and stop pins are no longer drawn on the map.
+  // Only the stops list and ETA panel are updated.
   renderStopsList();
-  if (!map) return;
-  const data = routeData[currentRoute];
-  if (routeLine) map.removeLayer(routeLine);
-  stopMarkers.forEach(m => map.removeLayer(m));
-  stopMarkers = [];
-  routeLine = L.polyline(data.stops.map(s => s.coords), { color: "#00c98b", weight: 6, opacity: 0.95 }).addTo(map);
-  data.stops.forEach(s => {
-    stopMarkers.push(L.marker(s.coords).addTo(map).bindPopup("<b>" + s.name + "</b><br>Sample time: " + s.time));
-  });
-  fitRoute();
 }
 
 function changeRoute() { currentRoute = $("route").value; renderRoute(); }
 
 function fitRoute() {
-  if (!map || !routeLine) return;
-  map.fitBounds(routeData[currentRoute].stops.map(s => s.coords), { padding: [40, 40] });
+  if (!map) return;
+  map.fitBounds(places.map(p => [p.lat, p.lng]), { padding: [30, 30] });
 }
 
 function showAllStops() {
