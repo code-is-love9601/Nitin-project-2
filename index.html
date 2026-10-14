@@ -136,6 +136,41 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 @media(max-width:850px){.layout{grid-template-columns:1fr}.features{grid-template-columns:repeat(2,1fr)}header{align-items:flex-start;flex-direction:column}nav{gap:14px}}
 @media(max-width:500px){.hero{padding:35px 5%}.features,.bottom,.stats,.area-grid{grid-template-columns:1fr}.panel{padding:14px}#map{height:310px}}
+
+
+/* ---------- KEXART-inspired scroll typography ---------- */
+:root{--reveal-duration:850ms}
+@keyframes heroDropIn{
+  0%{opacity:0;transform:translate3d(0,-34px,0) rotateX(-12deg);filter:blur(7px)}
+  65%{opacity:1;transform:translate3d(0,5px,0) rotateX(2deg);filter:blur(0)}
+  100%{opacity:1;transform:translate3d(0,0,0) rotateX(0);filter:blur(0)}
+}
+.hero .eyebrow{animation:heroDropIn .8s cubic-bezier(.2,.75,.25,1) both}
+.hero h1{animation:heroDropIn 1s .12s cubic-bezier(.2,.75,.25,1) both}
+.hero p{animation:heroDropIn .9s .24s cubic-bezier(.2,.75,.25,1) both}
+.hero .actions{animation:heroDropIn .9s .36s cubic-bezier(.2,.75,.25,1) both}
+.scroll-drop{
+  opacity:0;
+  transform:translate3d(0,-28px,0);
+  filter:blur(5px);
+  transition:opacity var(--reveal-duration) cubic-bezier(.2,.7,.2,1),
+             transform var(--reveal-duration) cubic-bezier(.2,.7,.2,1),
+             filter var(--reveal-duration) ease;
+  transition-delay:var(--drop-delay,0ms);
+  will-change:opacity,transform,filter;
+}
+.scroll-drop.is-visible{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}
+/* A little extra motion on section titles */
+h2.scroll-drop{transform:translate3d(0,-34px,0);letter-spacing:-.035em}
+h2.scroll-drop.is-visible{transform:translate3d(0,0,0);letter-spacing:normal}
+.feature,.member{transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease}
+.feature.scroll-drop.is-visible{transition:opacity var(--reveal-duration) ease,transform var(--reveal-duration) cubic-bezier(.2,.7,.2,1),filter var(--reveal-duration) ease,box-shadow .3s ease,border-color .3s ease}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .hero .eyebrow,.hero h1,.hero p,.hero .actions{animation:none}
+  .scroll-drop,.scroll-drop.is-visible{opacity:1;transform:none;filter:none;transition:none;will-change:auto}
+}
+
 </style>
 </head>
 <body>
@@ -715,5 +750,50 @@ function handleChatSubmit(e) {
 /* ---------- START ---------- */
 initialiseMap();
 </script>
+
+<script>
+/* ---------- Scroll-triggered drop-in text ---------- */
+(function () {
+  function setupScrollTypography() {
+    const targets = document.querySelectorAll(
+      '.hero .eyebrow, .hero h1, .panel h2, .panel h3, .feature, .team-tag, .team h2, .team-sub, .member, .team-foot, .info h2, .info p, footer'
+    );
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    targets.forEach((el, index) => {
+      if (el.closest('.hero')) return; // Hero uses its own entrance animation.
+      el.classList.add('scroll-drop');
+      // Small stagger creates a flowing, cascading text reveal.
+      const siblingIndex = Array.from(el.parentElement.children).indexOf(el);
+      el.style.setProperty('--drop-delay', Math.min(siblingIndex * 75, 300) + 'ms');
+    });
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      targets.forEach(el => el.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          obs.unobserve(entry.target); // Reveal once, so scrolling stays smooth.
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -35px 0px' });
+
+    targets.forEach(el => {
+      if (!el.closest('.hero')) observer.observe(el);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupScrollTypography, { once: true });
+  } else {
+    setupScrollTypography();
+  }
+})();
+</script>
+
 </body>
 </html>
