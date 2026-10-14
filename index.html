@@ -3,581 +3,592 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BusAI Navigator - Smart Bus Management System</title>
+<title>BusSaathi | Smart Bus Tracking</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<!-- Map CSS -->
+<link rel="stylesheet"
+ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ crossorigin=""/>
 
 <style>
-body{font-family:Inter,sans-serif;background:#0B1220;color:#F8FAFC}
-.card{background:#111827;border:1px solid #374151}
-.map-container{width:100%;height:100%;background:#0B1220;min-height:400px}
-.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9)}
-.leaflet-container{background:#0B1220}
-.leaflet-bar{border:1px solid #374151}
-.leaflet-bar a{background:#111827;color:white;border-bottom:1px solid #374151}
-.leaflet-bar a:hover{background:#1f2937}
-.leaflet-control-attribution{background:rgba(17,24,39,.8)!important;color:#9ca3af!important}
-.leaflet-control-attribution a{color:#818cf8!important}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:#111827;border-radius:4px}
-::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
-.card-link{background:#111827;border:1px solid #374151;transition:all .3s}
-.card-link:hover{transform:translateY(-4px);border-color:#6366f1;box-shadow:0 10px 25px -5px #6366f133}
-.view-section{display:none}
-.view-section.active{display:flex;flex-direction:column;height:100vh}
-@media(max-width:700px){
- .view-section.active{height:auto;min-height:100vh}
- #view-user.active{height:100vh}
- #view-user .map-container{position:fixed}
- #view-user .absolute.top-4{width:calc(100% - 32px)}
+:root {
+  --bg:#031321;
+  --panel:#071e2d;
+  --green:#00e9a1;
+  --text:#f4fbff;
+  --muted:#a8bdca;
+  --border:#087d70;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;line-height:1.5
+}
+a{color:inherit;text-decoration:none}
+
+/* --- Preloader --- */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #031321;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  transition: opacity 0.6s ease;
+}
+.loader-box { text-align: center; }
+.loader-icon { font-size: 55px; animation: busPulse 1s infinite alternate; }
+.loader-logo { font-size: 32px; font-weight: bold; color: var(--green); margin-top: 10px; }
+.loader-text { color: var(--muted); margin-top: 8px; font-size: 15px; }
+@keyframes busPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+.hide-preloader { opacity: 0; pointer-events: none; }
+
+header{
+  position:sticky;top:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:18px;padding:15px 5%;
+  background:#041522f5;border-bottom:1px solid var(--border)
+}
+.logo{font-size:25px;font-weight:bold;color:var(--green)}
+nav{display:flex;gap:20px;flex-wrap:wrap}
+nav a{font-size:14px;color:var(--muted)}
+nav a:hover{color:var(--green)}
+button,select,input{ font:inherit;border-radius:10px;padding:12px; }
+button{cursor:pointer;border:1px solid var(--green);background:transparent;color:white}
+button:hover{filter:brightness(1.15)}
+button.primary{background:var(--green);color:#00251b;font-weight:bold}
+button:disabled{opacity:.55;cursor:not-allowed}
+.hero{
+  padding:55px 5%;min-height:260px;
+  background:radial-gradient(ellipse at 85% 30%,#075348 0%,transparent 38%),
+             linear-gradient(120deg,#041522,#062738);
+}
+.eyebrow{color:var(--green);font-weight:bold;letter-spacing:2px}
+h1{font-size:clamp(34px,5vw,56px);line-height:1.1;margin:12px 0}
+h1 span{color:var(--green)}
+.hero p{color:var(--muted);max-width:600px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+main{max-width:1300px;margin:auto;padding:25px 3%}
+.layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:18px}
+.panel,.feature,.info{
+  background:linear-gradient(145deg,#092535,#041724);
+  border:1px solid var(--border);border-radius:17px;padding:20px;
+  min-width:0
+}
+.panel h2{margin-top:0}
+.muted{color:var(--muted)}
+.route-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+select,input{background:#0a2939;color:white;border:1px solid #426271}
+#route{min-width:160px}
+#map{
+  width:100%;height:380px;border-radius:13px;
+  margin:15px 0;background:#d8e3e3;z-index:1
+}
+.map-note{font-size:12px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.stat{border:1px solid var(--border);border-radius:13px;padding:15px}
+.big{font-size:25px;font-weight:bold;color:var(--green)}
+.stops{padding-left:22px}
+.stops li{padding:5px 0}
+.driver-buttons{display:grid;gap:10px;margin:16px 0}
+.status{padding:14px;border:1px solid #34596a;border-radius:12px;overflow-wrap:anywhere}
+.status strong{color:var(--green)}
+.features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
+.feature h3{margin:0 0 8px}
+.feature p{margin:0;color:var(--muted);font-size:14px}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+footer{text-align:center;color:var(--muted);padding:25px}
+
+/* --- Area Explorer (locations + road route to ITM) --- */
+.area-tools{
+  margin:18px 0;padding:16px;
+  border:1px solid var(--border);border-radius:13px;
+  background:#06202e
+}
+.area-tools h3{margin:0 0 4px}
+.area-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.area-grid input,.area-grid select{width:100%}
+.area-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+#areaStatus{font-size:13px;margin-top:10px;color:var(--muted)}
+#areaRouteInfo{
+  display:none;margin-top:10px;padding:12px;
+  border:1px solid #34596a;border-radius:10px;
+  background:#0a2939;font-size:14px;line-height:1.6
+}
+#areaRouteInfo p{margin:4px 0}
+#areaRouteInfo a{color:var(--green);text-decoration:underline}
+.itm-marker{
+  width:24px;height:24px;background:#ff1744;
+  border:3px solid white;border-radius:50%;box-shadow:0 0 10px #ff1744
+}
+.area-marker{
+  width:15px;height:15px;border-radius:50%;
+  border:2px solid white;box-shadow:0 1px 5px #555
+}
+.popup-btn{
+  width:100%;margin-top:6px;padding:8px;
+  background:#1677e8;color:#fff;border:none;font-weight:bold;font-size:13px
+}
+.legend{
+  background:white;color:#333;padding:10px;line-height:1.8;
+  border-radius:8px;box-shadow:0 1px 5px #999;font-size:12px
+}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+
+/* --- Circular Green Chat Button --- */
+#chatToggle {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  width: 60px;
+  height: 60px;
+  background-color: #00a86b;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 26px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  cursor: pointer;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  padding: 0;
+}
+#chatToggle:hover { transform: scale(1.1); }
+
+/* --- AI Chat Window --- */
+#chatWindow {
+  position: fixed;
+  bottom: 95px;
+  right: 25px;
+  width: 340px;
+  height: 450px;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 99999;
+  color: #333;
+}
+.chat-header {
+  background: #00a86b;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  color: #fff;
+  font-size: 16px;
+}
+.chat-body {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  font-size: 14px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-msg-bot {
+  background: #00a86b;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  max-width: 85%;
+  line-height: 1.4;
+  align-self: flex-start;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.chat-msg-user {
+  background: #092535;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  max-width: 85%;
+  line-height: 1.4;
+  align-self: flex-end;
+}
+.chat-footer {
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
+}
+.chat-footer input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #333;
+  outline: none;
+}
+.chat-footer button {
+  background: #00a86b;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+@media(max-width:850px){
+  .layout{grid-template-columns:1fr}
+  .features{grid-template-columns:repeat(2,1fr)}
+  header{align-items:flex-start;flex-direction:column}
+  nav{gap:14px}
+}
+@media(max-width:500px){
+  .hero{padding:35px 5%}
+  .features,.bottom,.stats,.area-grid{grid-template-columns:1fr}
+  .panel{padding:14px}
+  #map{height:310px}
 }
 </style>
 </head>
 
-<body class="overflow-x-hidden min-h-screen">
+<body>
 
-<!-- HOME -->
-<div id="view-home" class="view-section active items-center justify-center min-h-screen p-4 bg-slate-950">
- <div class="max-w-4xl w-full mx-auto text-center">
-  <div class="mb-12">
-   <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white text-3xl mb-4">
-    <i class="fa-solid fa-bus"></i>
-   </div>
-   <h1 class="text-4xl md:text-5xl font-bold mb-3">Welcome to BusAI Navigator</h1>
-   <p class="text-gray-400 text-lg">Smart transit management and location tracking.</p>
-   <p class="text-indigo-300 mt-2">Location: Gorakhpur, Uttar Pradesh</p>
+<!-- Preloader -->
+<div id="preloader">
+  <div class="loader-box">
+    <div class="loader-icon">🚌</div>
+    <div class="loader-logo">BusSaathi</div>
+    <div class="loader-text">Connecting Live Bus Routes...</div>
   </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-   <button onclick="switchView('operator')" class="card-link p-8 rounded-2xl flex flex-col items-center w-full">
-    <div class="w-14 h-14 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-2xl mb-6">
-     <i class="fa-solid fa-user-shield"></i>
-    </div>
-    <h2 class="text-2xl font-bold mb-2">Operator Dashboard</h2>
-    <p class="text-gray-400 text-sm">Fleet management, analytics and bus location updates.</p>
-   </button>
-
-   <button onclick="switchView('user')" class="card-link p-8 rounded-2xl flex flex-col items-center w-full">
-    <div class="w-14 h-14 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-2xl mb-6">
-     <i class="fa-solid fa-user"></i>
-    </div>
-    <h2 class="text-2xl font-bold mb-2">User Dashboard</h2>
-    <p class="text-gray-400 text-sm">Search for a bus and view its reported location on the map.</p>
-   </button>
-  </div>
- </div>
 </div>
 
-<!-- OPERATOR DASHBOARD -->
-<div id="view-operator" class="view-section">
- <header class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-800 bg-gray-900">
-  <div class="flex items-center gap-3">
-   <button onclick="switchView('home')" class="text-gray-400 hover:text-white">← Home</button>
-   <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
-    <i class="fa-solid fa-bus"></i>
-   </div>
-   <div>
-    <h1 class="font-bold">BusAI Navigator - Operator Mode</h1>
-    <p class="text-xs text-gray-400">Gorakhpur, Uttar Pradesh</p>
-   </div>
-  </div>
-  <div class="text-sm text-gray-400">
-   <span id="operator-time"></span>
-   <div><span id="op-status-message">Backend not connected</span></div>
-  </div>
- </header>
+<header>
+  <a class="logo" href="#home">🚌 BusSaathi</a>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#student">Student</a>
+    <a href="#driver">Driver</a>
+    <a href="#features">Features</a>
+    <a href="#about">About</a>
+    <a href="#developer">Developer</a>
+  </nav>
+</header>
 
- <main class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 overflow-auto">
-  <section class="lg:col-span-2 flex flex-col gap-4">
-   <div class="card rounded-lg p-4">
-    <div class="flex flex-wrap justify-between gap-3 mb-3">
-     <span class="font-semibold">Location: Gorakhpur, Uttar Pradesh</span>
-     <form id="op-search-form" class="flex">
-      <input id="op-search-input" placeholder="Search Bus ID" class="bg-gray-900 border border-gray-700 rounded-l px-3 py-2 text-xs">
-      <button class="bg-indigo-600 px-3 rounded-r"><i class="fa-solid fa-search"></i></button>
-     </form>
-    </div>
-    <div id="operator-map" class="map-container rounded border border-gray-800" style="height:360px"></div>
-   </div>
+<section class="hero" id="home">
+  <div class="eyebrow">SMARTER DAILY COMMUTE</div>
+  <h1>Your bus. Your <span>time.</span></h1>
+  <p>Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
+  <div class="actions">
+    <button class="primary" onclick="goTo('student')">📍 Student Mode</button>
+    <button onclick="goTo('driver')">🧭 Driver Mode</button>
+  </div>
+</section>
 
-   <div class="card rounded-lg p-4">
-    <h3 class="text-sm font-semibold mb-3">System Analytics</h3>
-    <div style="height:220px"><canvas id="delay-chart"></canvas></div>
-    <p id="ics-analytics-summary" class="text-xs text-gray-400 mt-2">Total in Feed: 0 | Displayed: 0</p>
-   </div>
+<main>
+  <div class="layout">
+    <section class="panel" id="student">
+      <div class="route-row">
+        <div>
+          <h2>📍 Track Your Bus</h2>
+          <p class="muted">Choose a route to see its stops on the map.</p>
+        </div>
+        <label>Bus route<br>
+          <select id="route" onchange="changeRoute()">
+            <option value="gorakhpur">Gorakhpur Route (MMMUT - Medical - Goal Ghar)</option>
+            <option value="reverse">Reverse Route (Goal Ghar - Medical - MMMUT)</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="map"></div>
+      <p id="mapStatus" class="map-note">Loading interactive map…</p>
+
+      <!-- Area Explorer -->
+      <div class="area-tools" id="areas">
+        <h3>🧭 Explore Areas &amp; Route to ITM GIDA</h3>
+        <p class="muted" style="margin:0;font-size:13px">Search an area or tap its dot on the map to get the road route to ITM GIDA.</p>
+
+        <div class="area-grid">
+          <input id="areaSearch" type="search" placeholder="Search an area..." aria-label="Search area">
+          <select id="areaSelect" aria-label="Select starting area">
+            <option value="">Choose starting area</option>
+          </select>
+        </div>
+
+        <div class="area-buttons">
+          <button class="primary" id="areaRouteBtn" type="button">Show Road Route to ITM</button>
+          <button id="areaClearBtn" type="button">Clear Route</button>
+          <button id="areaAllBtn" type="button">Show All Areas</button>
+        </div>
+
+        <div id="areaStatus" role="status">Select an area or tap its marker on the map.</div>
+        <div id="areaRouteInfo"></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div>Estimated arrival at destination</div>
+          <div class="big" id="eta">15 minutes</div>
+          <small class="muted">Sample estimate only — not live traffic data.</small>
+        </div>
+        <div>
+          <h3>Route Stops</h3>
+          <ol class="stops" id="stops"></ol>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" onclick="showAllStops()">☷ View All Stops</button>
+        <button onclick="fitRoute()">⛶ Fit Route on Map</button>
+      </div>
+    </section>
+
+    <section class="panel" id="driver">
+      <h2>🧭 Driver Mode</h2>
+      <p class="muted">Test your phone's GPS and display your current location on the map.</p>
+      <div class="status">🔒 Privacy: your location stays on this device. It is not shared with students.</div>
+
+      <div class="driver-buttons">
+        <button class="primary" id="startBtn" onclick="startGPS()">▶ Start GPS Test</button>
+        <button id="stopBtn" onclick="stopGPS()">■ Stop GPS</button>
+      </div>
+
+      <div class="status">
+        GPS Status<br><strong id="gpsStatus">GPS not started.</strong>
+        <div id="coordinates" class="muted"></div>
+      </div>
+
+      <p class="muted">GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.</p>
+    </section>
+  </div>
+
+  <section class="features" id="features">
+    <div class="feature"><h3>🗺️ Interactive Map</h3><p>Explore routes and stops on a real map.</p></div>
+    <div class="feature"><h3>🔀 Multiple Routes</h3><p>Switch between Gorakhpur city stops.</p></div>
+    <div class="feature"><h3>🕒 Arrival Estimate</h3><p>See sample arrival information.</p></div>
+    <div class="feature"><h3>🔐 Privacy First</h3><p>GPS test location is not shared.</p></div>
   </section>
 
-  <aside class="flex flex-col gap-4">
-   <div class="card rounded-lg p-4">
-    <h3 class="text-sm font-semibold text-red-400 mb-3">Critical Alerts</h3>
-    <div id="db-alerts-container" class="text-xs text-gray-400">No critical alerts.</div>
-   </div>
-
-   <div class="card rounded-lg p-4">
-    <div class="flex justify-between mb-3">
-     <h3 class="text-sm font-semibold">Live Bus Status</h3>
-     <span id="bus-count-badge" class="text-xs text-gray-400">0 Buses</span>
-    </div>
-    <div id="bus-status-container" class="space-y-2 text-xs text-gray-400">
-     Waiting for backend data...
-    </div>
-   </div>
-
-   <div class="card rounded-lg p-4">
-    <h3 class="text-sm font-semibold text-indigo-400 mb-3">AI Predictions</h3>
-    <div id="ai-suggestions" class="text-xs text-gray-400">Live fleet data required.</div>
-   </div>
-  </aside>
- </main>
-</div>
-
-<!-- USER DASHBOARD -->
-<div id="view-user" class="view-section relative h-screen overflow-hidden">
- <div id="user-map" class="map-container absolute inset-0 h-full w-full z-0"></div>
-
- <div class="absolute top-4 left-4 z-[1000] w-80 max-w-[calc(100%-32px)] bg-gray-900/95 border border-gray-700 p-4 rounded-xl shadow-xl">
-  <div class="flex items-center justify-between mb-3">
-   <div class="flex items-center gap-2">
-    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
-     <i class="fa-solid fa-bus"></i>
-    </div>
-    <div>
-     <h2 class="font-bold text-sm">BusAI Navigator</h2>
-     <p class="text-xs text-gray-400">Gorakhpur Bus Tracking</p>
-    </div>
-   </div>
-   <button onclick="switchView('home')" class="text-xs text-gray-300 bg-gray-800 rounded px-2 py-1">Home</button>
+  <div class="bottom">
+    <section class="info" id="about">
+      <h2>💡 About BusSaathi</h2>
+      <p class="muted">BusSaathi is a student project prototype designed to help college students explore transport routes and stops.</p>
+      <p class="muted">Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.</p>
+    </section>
+    <section class="info" id="developer">
+      <h2>👨‍💻 Meet the Developer</h2>
+      <p><strong style="color:var(--green)">Nitin</strong></p>
+      <p class="muted">Student Developer · Computer Science</p>
+      <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener">View GitHub Profile ↗</a>
+    </section>
   </div>
+</main>
 
-  <form id="user-search-form" class="flex gap-2">
-   <input id="user-bus-input" placeholder="Enter Bus ID" class="min-w-0 flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs">
-   <button class="bg-cyan-600 px-3 rounded-lg"><i class="fa-solid fa-search"></i></button>
+<footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
+
+<!-- Circular Green Chat Button -->
+<button id="chatToggle" onclick="toggleChatWindow()">
+  💬
+</button>
+
+<!-- AI Saathi Chat Window -->
+<div id="chatWindow">
+  <div class="chat-header">
+    <span>🤖 Saathi - Bus Assistant</span>
+    <button onclick="toggleChatWindow()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer; font-weight:bold;">✕</button>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="chat-msg-bot">
+      Namaste! Main Saathi AI hoon. MMMUT, Medical Road, Goal Ghar ki bus timing, traffic delay ya stops ke baare me poocho! 🚌
+    </div>
+  </div>
+  <form class="chat-footer" onsubmit="handleChatSubmit(event)">
+    <input type="text" id="userInput" placeholder="Ask Saathi anything about bus..." required />
+    <button type="submit">Send</button>
   </form>
-
-  <div id="user-tracking-status" class="mt-3 text-xs text-gray-400">Enter a bus ID to search.</div>
-  <button onclick="locateMe()" class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg px-3 py-2 text-xs">
-   <i class="fa-solid fa-location-crosshairs mr-1"></i> Use My Location
-  </button>
-  <button onclick="showGorakhpur()" class="w-full mt-2 bg-gray-700 hover:bg-gray-600 rounded-lg px-3 py-2 text-xs">
-   Show Gorakhpur
-  </button>
- </div>
 </div>
+
+<!-- Map JavaScript -->
+<script
+ src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ crossorigin="">
+</script>
 
 <script>
 "use strict";
 
-/*
- * Location configuration:
- * Gorakhpur, Uttar Pradesh
- * Change these coordinates if you want another default map location.
- */
-const MAP_CENTER = [26.7606, 83.3732];
-
-let opMap = null;
-let userMap = null;
-let delayChart = null;
-let busMarkersOp = new Map();
-let busMarkersUser = new Map();
-let currentUserMarker = null;
-let selectedBusId = null;
-let latestBuses = [];
-
-function switchView(viewName) {
- document.querySelectorAll(".view-section").forEach(el => el.classList.remove("active"));
-
- const target = document.getElementById("view-" + viewName);
- if (!target) return;
- target.classList.add("active");
-
- setTimeout(() => {
-  if (viewName === "operator") {
-   if (!opMap) initOperatorMap();
-   else opMap.invalidateSize();
-  }
-
-  if (viewName === "user") {
-   if (!userMap) initUserMap();
-   else userMap.invalidateSize();
-  }
- }, 150);
-}
-
-setInterval(() => {
- const now = new Date();
- const el = document.getElementById("operator-time");
- if (el) {
-  el.textContent = now.toLocaleString("en-IN", {
-   timeZone: "Asia/Kolkata"
-  });
- }
-}, 1000);
-
-function createBaseMap(elementId, zoom = 12) {
- const map = L.map(elementId).setView(MAP_CENTER, zoom);
-
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
- }).addTo(map);
-
- return map;
-}
-
-function initOperatorMap() {
- if (typeof L === "undefined") return;
-
- opMap = createBaseMap("operator-map");
-
- const ctx = document.getElementById("delay-chart").getContext("2d");
-
- delayChart = new Chart(ctx, {
-  type: "bar",
-  data: {
-   labels: [],
-   datasets: [{
-    label: "Delay (minutes)",
-    data: [],
-    backgroundColor: "#6366f1"
-   }]
+const routeData = {
+  gorakhpur: {
+    name: "Gorakhpur Route",
+    eta: "15 minutes",
+    stops: [
+      { name: 'MMMUT', time: "08:00", coords: [26.73108, 83.43721] },
+      { name: 'Medical Road', time: "08:12", coords: [26.7320664, 83.3843874] },
+      { name: 'Goal Ghar', time: "08:25", coords: [26.751213, 83.376266] }
+    ]
   },
-  options: {
-   responsive: true,
-   maintainAspectRatio: false,
-   plugins: {
-    legend: { display: false }
-   },
-   scales: {
-    x: {
-     ticks: { color: "#9ca3af" },
-     grid: { color: "#374151" }
-    },
-    y: {
-     beginAtZero: true,
-     ticks: { color: "#9ca3af" },
-     grid: { color: "#374151" }
-    }
-   }
+  reverse: {
+    name: "Reverse Route",
+    eta: "20 minutes",
+    stops: [
+      { name: 'Goal Ghar', time: "08:00", coords: [26.751213, 83.376266] },
+      { name: 'Medical Road', time: "08:12", coords: [26.7320664, 83.3843874] },
+      { name: 'MMMUT', time: "08:25", coords: [26.73108, 83.43721] }
+    ]
   }
- });
+};
 
- renderBuses(latestBuses);
+/* ============================================================
+   AREA LOCATIONS  (add new places here, inside the `places` array)
+   Rules: comma after each entry except the last, unique `name`.
+   ============================================================ */
+const itm = {
+  name: 'ITM GIDA',
+  area: 'Institute of Technology and Management',
+  lat: 26.74296, lng: 83.27327,
+  color: '#ff1744',
+  destination: true
+};
+
+const places = [
+  itm,
+  { name: 'GIDA Sector 7', area: 'Educational and Industrial Area', lat: 26.7460, lng: 83.2690, color: '#ff9800' },
+  { name: 'GIDA Sector 22', area: 'GIDA Industrial Area', lat: 26.7525, lng: 83.2298, color: '#ff9800' },
+  { name: 'GIDA Phase 1', area: 'Industrial Area', lat: 26.75219, lng: 83.22104, color: '#ff9800' },
+  { name: 'Kalesar', area: 'GIDA and Sahjanwa locality', lat: 26.74087, lng: 83.24585, color: '#388e3c' },
+  { name: 'Sahjanwa', area: 'Town and Railway Station Area', lat: 26.76158, lng: 83.21582, color: '#388e3c' },
+  { name: 'Jagdishpur', area: 'Sahjanwa locality', lat: 26.7650, lng: 83.2420, color: '#388e3c' },
+  { name: 'Sihapar', area: 'Locality near GIDA', lat: 26.7650, lng: 83.2220, color: '#388e3c' },
+  { name: 'Pali', area: 'Sahjanwa region', lat: 26.81963, lng: 83.20392, color: '#388e3c' },
+  { name: 'Gorakhpur Railway Station', area: 'Main Railway Station', lat: 26.7599, lng: 83.3731, color: '#7b1fa2' },
+  { name: 'Golghar', area: 'Commercial Centre', lat: 26.751213, lng: 83.376266, color: '#f57c00' },
+  { name: 'Mohaddipur', area: 'Major City Locality', lat: 26.7490, lng: 83.3620, color: '#1976d2' },
+  { name: 'Medical Road', area: 'Main Road Area', lat: 26.7320664, lng: 83.3843874, color: '#1976d2' },
+  { name: 'Gorakhpur University', area: 'Education Area', lat: 26.7485, lng: 83.3810, color: '#c2185b' },
+  { name: 'MMMUT', area: 'Madan Mohan Malaviya University of Technology', lat: 26.73108, lng: 83.43721, color: '#c2185b' },
+  { name: 'Gorakhnath Temple', area: 'Religious Landmark', lat: 26.7785, lng: 83.3775, color: '#00897b' },
+  { name: 'Geeta Press', area: 'Cultural Landmark', lat: 26.7620, lng: 83.3745, color: '#8d6e63' },
+  { name: 'Kushmi Forest', area: 'Green Area', lat: 26.7470, lng: 83.3330, color: '#558b2f' },
+  { name: 'Ramgarh Tal', area: 'Lake and Recreation Area', lat: 26.7165, lng: 83.4160, color: '#0288d1' },
+  { name: 'Nauka Vihar', area: 'Lakefront Attraction', lat: 26.7160, lng: 83.4170, color: '#0288d1' },
+  { name: 'AIIMS Gorakhpur', area: 'Medical Institution', lat: 26.7280, lng: 83.4080, color: '#455a64' }
+];
+
+let map = null;
+let routeLine = null;
+let stopMarkers = [];
+let gpsMarker = null;
+let watchId = null;
+let currentRoute = "gorakhpur";
+
+// Area explorer state
+const areaMarkers = new Map();
+let areaRouteLayer = null;
+let areaRouteRequestId = 0;
+
+function goTo(id) {
+  document.getElementById(id).scrollIntoView({behavior:"smooth"});
 }
 
-function initUserMap() {
- if (typeof L === "undefined") return;
-
- userMap = createBaseMap("user-map");
-
- L.control.zoom({ position: "bottomright" }).addTo(userMap);
-
- L.marker(MAP_CENTER)
-  .addTo(userMap)
-  .bindPopup("<b>Gorakhpur</b><br>Default map location")
-  .openPopup();
-
- renderUserBuses(latestBuses);
+function setMapStatus(message) {
+  document.getElementById("mapStatus").textContent = message;
 }
 
-function getColorForDelay(delay) {
- if (delay <= 2) return "#22c55e";
- if (delay <= 10) return "#eab308";
- return "#ef4444";
-}
+function initialiseMap() {
+  const status = document.getElementById("mapStatus");
 
-function renderBuses(buses) {
- const container = document.getElementById("bus-status-container");
- const badge = document.getElementById("bus-count-badge");
- const summary = document.getElementById("ics-analytics-summary");
-
- if (!container) return;
-
- container.replaceChildren();
-
- if (badge) badge.textContent = buses.length + " Buses";
- if (summary) {
-  summary.textContent = "Total in Feed: " + buses.length +
-   " | Displayed: " + buses.length;
- }
-
- if (!buses.length) {
-  container.textContent = "No live bus data received.";
- }
-
- buses.forEach(bus => {
-  const row = document.createElement("div");
-  row.className = "p-3 rounded bg-gray-900 border border-gray-800";
-
-  const title = document.createElement("div");
-  title.className = "font-bold text-white";
-  title.textContent = (bus.busId || "Unknown Bus") +
-   " - Route " + (bus.routeId || "N/A");
-
-  const coordinates = document.createElement("div");
-  coordinates.className = "text-gray-400 mt-1";
-  coordinates.textContent =
-   "Lat: " + Number(bus.lat).toFixed(4) +
-   " | Lng: " + Number(bus.lng).toFixed(4);
-
-  const delay = document.createElement("div");
-  delay.style.color = getColorForDelay(Number(bus.delay || 0));
-  delay.className = "mt-1";
-  delay.textContent = "Delay: " + Number(bus.delay || 0) + " min";
-
-  row.append(title, coordinates, delay);
-  container.appendChild(row);
- });
-
- if (delayChart) {
-  delayChart.data.labels = buses.map(b => b.busId || "Bus");
-  delayChart.data.datasets[0].data = buses.map(b => Number(b.delay || 0));
-  delayChart.update();
- }
-
- if (opMap) {
-  buses.forEach(bus => {
-   if (!Number.isFinite(Number(bus.lat)) ||
-       !Number.isFinite(Number(bus.lng))) return;
-
-   const id = String(bus.busId || "unknown");
-   let marker = busMarkersOp.get(id);
-
-   if (marker) {
-    marker.setLatLng([Number(bus.lat), Number(bus.lng)]);
-   } else {
-    marker = L.marker([Number(bus.lat), Number(bus.lng)])
-     .addTo(opMap)
-     .bindPopup("");
-
-    busMarkersOp.set(id, marker);
-   }
-
-   marker.setPopupContent(
-    "<b>" + escapeHtml(id) + "</b><br>" +
-    "Route: " + escapeHtml(String(bus.routeId || "N/A")) +
-    "<br>Delay: " + Number(bus.delay || 0) + " min"
-   );
-  });
- }
-
- renderUserBuses(buses);
-}
-
-function renderUserBuses(buses) {
- if (!userMap) return;
-
- buses.forEach(bus => {
-  if (!Number.isFinite(Number(bus.lat)) ||
-      !Number.isFinite(Number(bus.lng))) return;
-
-  const id = String(bus.busId || "unknown");
-
-  if (selectedBusId && id.toLowerCase() !== selectedBusId.toLowerCase()) {
-   return;
+  if (typeof L === "undefined") {
+    status.textContent = "Map library could not load. Check your internet connection.";
+    return;
   }
 
-  let marker = busMarkersUser.get(id);
+  try {
+    map = L.map("map");
 
-  if (!marker) {
-   marker = L.marker([Number(bus.lat), Number(bus.lng)])
-    .addTo(userMap)
-    .bindPopup("");
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
 
-   busMarkersUser.set(id, marker);
-  } else {
-   marker.setLatLng([Number(bus.lat), Number(bus.lng)]);
+    initAreas();
+    renderRoute();
+    setMapStatus("Map powered by OpenStreetMap and Leaflet.");
+
+    setTimeout(function() {
+      if (map) map.invalidateSize();
+    }, 300);
+  } catch (error) {
+    console.error("Map initialisation error:", error);
+    setMapStatus("Map could not start: " + error.message);
   }
-
-  marker.setPopupContent(
-   "<b>" + escapeHtml(id) + "</b><br>" +
-   "Route: " + escapeHtml(String(bus.routeId || "N/A")) +
-   "<br>Delay: " + Number(bus.delay || 0) + " min"
-  );
- });
 }
 
-function escapeHtml(value) {
- return String(value).replace(/[&<>"']/g, char => ({
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;"
- }[char]));
-}
+function renderRoute() {
+  if (!map || typeof L === "undefined") return;
 
-/*
- * Optional backend connection.
- * Live bus tracking requires your own Socket.IO backend.
- */
-let socket = null;
+  const data = routeData[currentRoute];
+  const points = data.stops.map(stop => stop.coords);
 
-function connectBackend() {
- const status = document.getElementById("op-status-message");
+  if (routeLine) map.removeLayer(routeLine);
+  stopMarkers.forEach(marker => map.removeLayer(marker));
+  stopMarkers = [];
 
- if (typeof io === "undefined") {
-  status.textContent = "Socket.IO library unavailable";
-  return;
- }
+  routeLine = L.polyline(points, {
+    color:"#00c98b",
+    weight:6,
+    opacity:0.95
+  }).addTo(map);
 
- try {
-  socket = io("http://localhost:5000", {
-   reconnection: true,
-   reconnectionAttempts: 5,
-   timeout: 5000
+  data.stops.forEach(function(stop) {
+    const marker = L.marker(stop.coords).addTo(map)
+      .bindPopup("<b>" + stop.name + "</b><br>Sample time: " + stop.time);
+    stopMarkers.push(marker);
   });
 
-  socket.on("connect", () => {
-   status.textContent = "Backend connected";
-   status.className = "text-green-400";
-  });
+  document.getElementById("stops").innerHTML = data.stops.map(function(stop) {
+    return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
+      stop.time + "</span></li>";
+  }).join("");
 
-  socket.on("connect_error", () => {
-   status.textContent = "Backend unavailable";
-   status.className = "text-yellow-400";
-  });
-
-  socket.on("disconnect", () => {
-   status.textContent = "Backend disconnected";
-   status.className = "text-red-400";
-  });
-
-  socket.on("bus-update", data => {
-   latestBuses = Array.isArray(data?.buses) ? data.buses : [];
-   renderBuses(latestBuses);
-  });
-
- } catch (error) {
-  status.textContent = "Backend connection unavailable";
- }
+  document.getElementById("eta").textContent = data.eta;
+  fitRoute();
 }
 
-document.getElementById("user-search-form").addEventListener("submit", event => {
- event.preventDefault();
-
- const input = document.getElementById("user-bus-input");
- const status = document.getElementById("user-tracking-status");
- const busId = input.value.trim();
-
- if (!busId) {
-  status.textContent = "Please enter a bus ID.";
-  return;
- }
-
- selectedBusId = busId;
-
- if (socket && socket.connected) {
-  socket.emit("track-bus", busId);
- }
-
- const found = latestBuses.find(bus =>
-  String(bus.busId || "").toLowerCase() === busId.toLowerCase()
- );
-
- if (found && userMap) {
-  const position = [Number(found.lat), Number(found.lng)];
-  userMap.setView(position, 15);
-
-  const marker = busMarkersUser.get(String(found.busId));
-  if (marker) marker.openPopup();
-
-  status.textContent = "Showing available location for bus " + busId + ".";
- } else {
-  status.textContent =
-   "Searching for " + busId +
-   ". A live location appears only when the backend sends matching bus data.";
- }
-
- renderUserBuses(latestBuses);
-});
-
-document.getElementById("op-search-form").addEventListener("submit", event => {
- event.preventDefault();
-
- const busId = document.getElementById("op-search-input").value.trim();
- if (!busId || !opMap) return;
-
- const marker = busMarkersOp.get(busId);
-
- if (marker) {
-  opMap.setView(marker.getLatLng(), 16);
-  marker.openPopup();
- } else {
-  alert("Bus not found in the currently received live data.");
- }
-});
-
-function locateMe() {
- const status = document.getElementById("user-tracking-status");
-
- if (!navigator.geolocation) {
-  status.textContent = "Geolocation is not supported by this browser.";
-  return;
- }
-
- status.textContent = "Requesting location permission...";
-
- navigator.geolocation.getCurrentPosition(position => {
-  const lat = position.coords.latitude;
-  const lng = position.coords.longitude;
-
-  if (!userMap) {
-   switchView("user");
-   setTimeout(() => showPosition(lat, lng), 300);
-  } else {
-   showPosition(lat, lng);
-  }
- }, error => {
-  status.textContent = "Could not get location: " + error.message;
- }, {
-  enableHighAccuracy: true,
-  timeout: 15000,
-  maximumAge: 0
- });
+function changeRoute() {
+  currentRoute = document.getElementById("route").value;
+  renderRoute();
 }
 
-function showPosition(lat, lng) {
- if (!userMap) return;
-
- userMap.setView([lat, lng], 16);
-
- if (currentUserMarker) {
-  currentUserMarker.setLatLng([lat, lng]);
- } else {
-  currentUserMarker = L.circleMarker([lat, lng], {
-   radius: 9,
-   color: "#ffffff",
-   weight: 2,
-   fillColor: "#06b6d4",
-   fillOpacity: 1
-  }).addTo(userMap);
- }
-
- currentUserMarker.bindPopup("Your current location").openPopup();
-
- document.getElementById("user-tracking-status").textContent =
-  "Your location: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+function fitRoute() {
+  if (!map || !routeLine) return;
+  const bounds = routeData[currentRoute].stops.map(s => s.coords);
+  map.fitBounds(bounds, { padding: [40, 40] });
 }
 
-function showGorakhpur() {
- if (!userMap) {
-  switchView("user");
-  setTimeout(showGorakhpur, 300);
-  return;
- }
-
- userMap.setView(MAP_CENTER, 12);
- document.getElementById("user-tracking-status").textContent =
-  "Map centered on Gorakhpur, Uttar Pradesh.";
+function showAllStops() {
+  const data = routeData[currentRoute];
+  alert(data.name + "\n\n" + data.stops.map((stop, i) => (i + 1) + ". " + stop.name + " — " + stop.time).join("\n"));
 }
 
-connectBackend();
-</script>
-</body>
-</html>
+/* ============================================================
+   AREA EXPLORER: markers, search, dropdown, road route to ITM
+   ============================================================ */
+function initAreas() {
+  const select = document.getElementById("areaSelect");
+  const search = document.getElementById("areaSearch");
+  const routeBtn = document.getElementById("areaRouteBtn");
+
+  // Markers + dropdown
