@@ -449,17 +449,17 @@ let firebaseReady = false, firebaseUser = null, busRef = null, busListenerAttach
 let lastGpsPoint = null, lastGpsTime = 0, lastSpeedKmh = null;
 let lastRoadDistanceKm = null, lastRouteFetchAt = 0;
 
-// Paste your project's Firebase web config here to sync the same bus across phones.
-// Keep this object as-is until you create a Firebase project and copy its web config.
-const firebaseConfig = {
+// BusSaathi Firebase web config.
+// IMPORTANT: Verify databaseURL in Firebase Console > Realtime Database > Data.
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDVqzI2A36Yyqk6WyIvC2-Cf9PEaVfHb8M",
   authDomain: "bus-saathi-final.firebaseapp.com",
+  databaseURL: "https://bus-saathi-final-default-rtdb.asia-southeast1.firebasedatabase.app/",
   projectId: "bus-saathi-final",
   storageBucket: "bus-saathi-final.firebasestorage.app",
   messagingSenderId: "518710772766",
   appId: "1:518710772766:web:7103f1238d042ab6c81a0f"
 };
-
 const areaMarkers = new Map();
 let areaRouteLayer = null, areaRouteRequestId = 0;
 
