@@ -75,6 +75,10 @@ footer{text-align:center;color:var(--muted);padding:25px}
 #areaRouteInfo p{margin:4px 0}
 #areaRouteInfo a{color:var(--green);text-decoration:underline}
 .itm-marker{width:24px;height:24px;background:#ff1744;border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px #ff1744}
+.live-bus-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#00e9a1;border:3px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.45);font-size:25px;line-height:1}
+.live-bus-icon::after{content:"";position:absolute;width:52px;height:52px;border:2px solid rgba(0,233,161,.55);border-radius:50%;animation:busLivePulse 1.8s infinite}
+@keyframes busLivePulse{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+#liveBusInfo{display:block;margin-top:8px;color:var(--green);font-size:13px;line-height:1.5}
 .area-marker{width:15px;height:15px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px #555}
 .popup-btn{width:100%;margin-top:6px;padding:8px;background:#1677e8;color:#fff;border:none;font-weight:bold;font-size:13px}
 
@@ -228,7 +232,7 @@ h2.scroll-drop.is-visible{transform:translate3d(0,0,0);letter-spacing:normal}
       <div class="route-row">
         <div>
           <h2>📍 Track Your Bus</h2>
-          <p class="muted">Choose a route to see its stops and sample timings. Tap any dot on the map to see buses, stop serial no. and driver contact.</p>
+          <p class="muted">Follow the single live bus marker on the map. Its position and ETA update from the driver GPS when live sharing is connected.</p>
         </div>
         <label>Bus route<br>
           <select id="route" onchange="changeRoute()">
@@ -260,8 +264,9 @@ h2.scroll-drop.is-visible{transform:translate3d(0,0,0);letter-spacing:normal}
       <div class="stats">
         <div class="stat">
           <div>Estimated arrival at destination</div>
-          <div class="big" id="eta">15 minutes</div>
-          <small class="muted">Sample estimate only — not live traffic data.</small>
+          <div class="big" id="eta">Waiting for bus</div>
+          <small class="muted">ETA uses the latest bus location and speed; road distance is approximate.</small>
+          <span id="liveBusInfo">🚌 Waiting for driver GPS…</span>
         </div>
         <div>
           <h3>🚌 Bus Directory</h3>
@@ -277,17 +282,17 @@ h2.scroll-drop.is-visible{transform:translate3d(0,0,0);letter-spacing:normal}
 
     <section class="panel" id="driver">
       <h2>🧭 Driver Mode</h2>
-      <p class="muted">Test your phone's GPS and display your current location on the map.</p>
-      <div class="status">🔒 Privacy: your location stays on this device. It is not shared with students.</div>
+      <p class="muted">Start GPS to turn this phone into the driver device. One bus icon will move on the map and, after Firebase is connected, on student phones too.</p>
+      <div class="status">📡 Live sharing: <strong id="sharingStatus">Local preview only — Firebase setup needed for other phones.</strong></div>
       <div class="driver-buttons">
-        <button class="primary" id="startBtn" onclick="startGPS()">▶ Start GPS Test</button>
+        <button class="primary" id="startBtn" onclick="startGPS()">▶ Start Live Bus GPS</button>
         <button id="stopBtn" onclick="stopGPS()" disabled>■ Stop GPS</button>
       </div>
       <div class="status">
-        GPS Status<br><strong id="gpsStatus">GPS not started.</strong>
+        Driver GPS Status<br><strong id="gpsStatus">GPS not started.</strong>
         <div id="coordinates" class="muted"></div>
       </div>
-      <p class="muted">GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.</p>
+      <p class="muted">Allow location access and keep this page open. For live tracking between separate phones, complete the Firebase setup in the code first. Use only with the driver's permission.</p>
     </section>
   </div>
 
@@ -339,13 +344,13 @@ h2.scroll-drop.is-visible{transform:translate3d(0,0,0);letter-spacing:normal}
     <section class="info" id="about">
       <h2>💡 About BusSaathi</h2>
       <p class="muted">BusSaathi is a student project prototype designed to help college students explore transport routes and stops.</p>
-      <p class="muted">Note: routes, arrival times, bus numbers, driver names and contact numbers are sample/demo data. This prototype is not connected to a real bus fleet.</p>
+      <p class="muted">Note: routes, arrival times, bus numbers, driver names and contact numbers are sample/demo data. This is a student prototype; it is not connected to a college bus fleet unless the driver shares GPS.</p>
     </section>
 
   </div>
 </main>
 
-<footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
+<footer>BusSaathi · Student Project Prototype · Live bus tracking prototype · Firebase connection required for cross-phone sync.</footer>
 
 <button id="chatToggle" onclick="toggleChatWindow()" aria-label="Open chat">💬</button>
 
@@ -364,6 +369,9 @@ h2.scroll-drop.is-visible{transform:translate3d(0,0,0);letter-spacing:normal}
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
 "use strict";
@@ -435,8 +443,23 @@ const places = [
 ];
 
 let map = null;
-let gpsMarker = null, gpsCircle = null, watchId = null;
+let busMarker = null, watchId = null;
 let currentRoute = "gorakhpur";
+let firebaseReady = false, firebaseUser = null, busRef = null, busListenerAttached = false;
+let lastGpsPoint = null, lastGpsTime = 0, lastSpeedKmh = null;
+let lastRoadDistanceKm = null, lastRouteFetchAt = 0;
+
+// Paste your project's Firebase web config here to sync the same bus across phones.
+// Keep this object as-is until you create a Firebase project and copy its web config.
+const firebaseConfig = {
+  apiKey: "AIzaSyDVqzI2A36Yyqk6WyIvC2-Cf9PEaVfHb8M",
+  authDomain: "bus-saathi-final.firebaseapp.com",
+  projectId: "bus-saathi-final",
+  storageBucket: "bus-saathi-final.firebasestorage.app",
+  messagingSenderId: "518710772766",
+  appId: "1:518710772766:web:7103f1238d042ab6c81a0f"
+};
+
 const areaMarkers = new Map();
 let areaRouteLayer = null, areaRouteRequestId = 0;
 
@@ -444,6 +467,106 @@ const $ = id => document.getElementById(id);
 
 function goTo(id) { $(id).scrollIntoView({ behavior: "smooth" }); }
 function setMapStatus(msg) { $("mapStatus").textContent = msg; }
+
+/* ---------- ONE SHARED LIVE BUS ---------- */
+function firebaseConfigIsReady() {
+  return FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes("PASTE_") &&
+    FIREBASE_CONFIG.projectId && !FIREBASE_CONFIG.projectId.includes("PASTE_") &&
+    FIREBASE_CONFIG.appId && !FIREBASE_CONFIG.appId.includes("PASTE_") &&
+    FIREBASE_CONFIG.databaseURL && !FIREBASE_CONFIG.databaseURL.includes("PASTE_");
+}
+
+function initLiveSharing() {
+  if (!firebaseConfigIsReady() || !window.firebase) {
+    $("sharingStatus").textContent = "Local preview only — add Firebase config for other phones.";
+    $("liveBusInfo").textContent = "🚌 No live driver feed yet. Start GPS on the driver phone.";
+    return;
+  }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.auth().signInAnonymously().then(cred => {
+      firebaseUser = cred.user;
+      busRef = firebase.database().ref("buses/bus1");
+      firebaseReady = true;
+      $("sharingStatus").textContent = "Connected — bus location can sync across phones.";
+      if (!busListenerAttached) {
+        busListenerAttached = true;
+        busRef.on("value", snap => {
+          const data = snap.val();
+          if (!data || typeof data.lat !== "number" || typeof data.lng !== "number") return;
+          updateLiveBus(data, false);
+        }, err => {
+          $("sharingStatus").textContent = "Live sync error: " + err.message;
+        });
+      }
+    }).catch(err => {
+      $("sharingStatus").textContent = "Firebase sign-in failed: " + err.message;
+    });
+  } catch (err) {
+    $("sharingStatus").textContent = "Firebase setup error: " + err.message;
+  }
+}
+
+function makeBusIcon() {
+  return L.divIcon({ className: "", html: '<div class="live-bus-icon" aria-label="Live bus">🚌</div>', iconSize: [44, 44], iconAnchor: [22, 22] });
+}
+
+function distanceKm(aLat, aLng, bLat, bLng) {
+  const toRad = n => n * Math.PI / 180;
+  const dLat = toRad(bLat - aLat), dLng = toRad(bLng - aLng);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLng/2)**2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function updateLiveBus(data, isDriverUpdate) {
+  if (!map || !data || typeof data.lat !== "number" || typeof data.lng !== "number") return;
+  const point = [data.lat, data.lng];
+  if (!busMarker) {
+    busMarker = L.marker(point, { icon: makeBusIcon(), zIndexOffset: 1000 }).addTo(map);
+    busMarker.bindPopup('<b>🚌 BusSaathi Live Bus</b><br><span id="busPopupInfo">Updating location…</span>');
+    map.setView(point, 15);
+  } else {
+    busMarker.setLatLng(point);
+  }
+  const destination = (typeof itm !== "undefined" && itm) ? itm : { lat: 26.74296, lng: 83.27327 };
+  const directKm = distanceKm(data.lat, data.lng, destination.lat, destination.lng);
+  const roadKm = (typeof data.roadDistanceKm === "number" && data.roadDistanceKm >= 0) ? data.roadDistanceKm : directKm * 1.3;
+  let speed = (typeof data.speedKmh === "number" && Number.isFinite(data.speedKmh)) ? data.speedKmh : null;
+  if (speed === null || speed < 0) speed = lastSpeedKmh;
+  if (speed !== null) lastSpeedKmh = speed;
+  const etaEl = $("eta"), infoEl = $("liveBusInfo");
+  const ageSeconds = data.updatedAt ? Math.max(0, (Date.now() - data.updatedAt) / 1000) : null;
+  if (ageSeconds !== null && ageSeconds > 90) {
+    infoEl.textContent = "⚠️ Last bus update was " + Math.round(ageSeconds/60) + " min ago.";
+  } else {
+    const speedText = (speed !== null) ? Math.round(speed) + " km/h" : "speed unavailable";
+    infoEl.textContent = "🟢 Live bus • " + speedText + " • " + roadKm.toFixed(1) + " km approx. to ITM GIDA";
+  }
+  if (speed !== null && speed < 2) {
+    etaEl.textContent = "Bus stopped";
+  } else {
+    const etaSpeed = (speed !== null && speed >= 2) ? speed : 20; // fallback until GPS provides speed
+    const minutes = Math.max(1, Math.round((roadKm / etaSpeed) * 60));
+    etaEl.textContent = minutes + " min";
+  }
+  const popup = document.getElementById("busPopupInfo");
+  if (popup) popup.textContent = (speed === null ? "Speed updating" : Math.round(speed) + " km/h") + " · ETA " + etaEl.textContent + " to ITM GIDA";
+  if (isDriverUpdate && firebaseReady && busRef) {
+    const payload = { lat: data.lat, lng: data.lng, speedKmh: (data.speedKmh ?? null), accuracy: data.accuracy || null, heading: data.heading ?? null, updatedAt: Date.now() };
+    busRef.set(payload).catch(err => { $("sharingStatus").textContent = "Could not share GPS: " + err.message; });
+  }
+}
+
+function getSpeedKmh(pos, lat, lng) {
+  const gpsSpeed = pos.coords.speed;
+  if (typeof gpsSpeed === "number" && Number.isFinite(gpsSpeed) && gpsSpeed >= 0) return gpsSpeed * 3.6;
+  const now = Date.now();
+  if (lastGpsPoint && lastGpsTime) {
+    const seconds = (now - lastGpsTime) / 1000;
+    if (seconds > 0.5 && seconds < 120) return distanceKm(lastGpsPoint.lat, lastGpsPoint.lng, lat, lng) / (seconds / 3600);
+  }
+  return null;
+}
 
 /* ---------- BUS INFO HELPERS ---------- */
 // All buses that stop at a place, with that place's serial number on the bus route
@@ -509,7 +632,7 @@ function initialiseMap() {
 
 function renderStopsList() {
   const data = routeData[currentRoute];
-  $("eta").textContent = data.eta;
+  if (!busMarker) $("eta").textContent = "Waiting for bus";
   renderBusDirectory();
 }
 
@@ -662,33 +785,27 @@ function startGPS() {
 
   watchId = navigator.geolocation.watchPosition(pos => {
     const lat = pos.coords.latitude, lng = pos.coords.longitude, acc = pos.coords.accuracy;
-    $("gpsStatus").textContent = "GPS active";
-    $("coordinates").textContent = "Lat: " + lat.toFixed(5) + ", Lng: " + lng.toFixed(5) + " (±" + Math.round(acc) + " m)";
-    if (!map) return;
-    if (!gpsMarker) {
-      gpsMarker = L.circleMarker([lat, lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#1677e8", fillOpacity: 1 }).addTo(map).bindPopup("You are here");
-      gpsCircle = L.circle([lat, lng], { radius: acc, color: "#1677e8", weight: 1, fillOpacity: 0.12 }).addTo(map);
-      map.setView([lat, lng], 16);
-    } else {
-      gpsMarker.setLatLng([lat, lng]);
-      gpsCircle.setLatLng([lat, lng]).setRadius(acc);
-    }
+    const speedKmh = getSpeedKmh(pos, lat, lng);
+    lastGpsPoint = { lat, lng };
+    lastGpsTime = Date.now();
+    $("gpsStatus").textContent = "GPS active — bus marker moving";
+    $("coordinates").textContent = "Lat: " + lat.toFixed(5) + ", Lng: " + lng.toFixed(5) + " · Accuracy ±" + Math.round(acc) + " m" + (speedKmh === null ? " · Speed calculating…" : " · Speed " + speedKmh.toFixed(1) + " km/h");
+    updateLiveBus({ lat, lng, speedKmh, accuracy: acc, heading: pos.coords.heading, updatedAt: Date.now() }, true);
+    if (firebaseReady) $("sharingStatus").textContent = "Connected — sending driver GPS to student map.";
+    else $("sharingStatus").textContent = "Local preview only — connect Firebase to sync other phones.";
   }, err => {
-    const msgs = { 1: "Permission denied. Allow location access.", 2: "Position unavailable.", 3: "Location request timed out." };
+    const msgs = { 1: "Permission denied. Allow location access in your browser settings.", 2: "Position unavailable. Move to an open area and retry.", 3: "GPS request timed out. Keep location enabled and retry." };
     $("gpsStatus").textContent = msgs[err.code] || "GPS error.";
     stopGPS(true);
-  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+  }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 });
 }
 
 function stopGPS(keepMessage) {
   if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-  if (map) {
-    if (gpsMarker) { map.removeLayer(gpsMarker); gpsMarker = null; }
-    if (gpsCircle) { map.removeLayer(gpsCircle); gpsCircle = null; }
-  }
+  // Keep the last bus marker visible, like a delivery app's last known location.
   $("startBtn").disabled = false;
   $("stopBtn").disabled = true;
-  if (keepMessage !== true) { $("gpsStatus").textContent = "GPS stopped."; $("coordinates").textContent = ""; }
+  if (keepMessage !== true) { $("gpsStatus").textContent = "GPS stopped. Last bus location remains on the map."; }
 }
 
 /* ---------- CHAT (Saathi) ---------- */
@@ -749,6 +866,7 @@ function handleChatSubmit(e) {
 
 /* ---------- START ---------- */
 initialiseMap();
+initLiveSharing();
 </script>
 
 <script>
