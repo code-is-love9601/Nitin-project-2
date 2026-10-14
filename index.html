@@ -5,10 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusSaathi | Smart Bus Tracking</title>
 
-<!-- Map CSS -->
 <link rel="stylesheet"
  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
- crossorigin=""/>
+ crossorigin="">
 
 <style>
 :root {
@@ -19,223 +18,535 @@
   --muted:#a8bdca;
   --border:#087d70;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;background:var(--bg);color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;line-height:1.5
-}
-a{color:inherit;text-decoration:none}
 
-/* --- Preloader --- */
+* { box-sizing:border-box; }
+
+html { scroll-behavior:smooth; }
+
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  line-height:1.5;
+}
+
+a { color:inherit; text-decoration:none; }
+
+button,select,input {
+  font:inherit;
+  border-radius:10px;
+  padding:12px;
+}
+
+button {
+  cursor:pointer;
+  border:1px solid var(--green);
+  background:transparent;
+  color:white;
+}
+
+button:hover { filter:brightness(1.15); }
+
+button.primary {
+  background:var(--green);
+  color:#00251b;
+  font-weight:bold;
+}
+
+button:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+/* Preloader */
+
 #preloader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #031321;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999999;
-  transition: opacity 0.6s ease;
+  position:fixed;
+  inset:0;
+  background:#031321;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:999999;
+  transition:opacity .6s ease;
 }
-.loader-box { text-align: center; }
-.loader-icon { font-size: 55px; animation: busPulse 1s infinite alternate; }
-.loader-logo { font-size: 32px; font-weight: bold; color: var(--green); margin-top: 10px; }
-.loader-text { color: var(--muted); margin-top: 8px; font-size: 15px; }
+
+.loader-box { text-align:center; }
+
+.loader-icon {
+  font-size:55px;
+  animation:busPulse 1s infinite alternate;
+}
+
+.loader-logo {
+  font-size:32px;
+  font-weight:bold;
+  color:var(--green);
+  margin-top:10px;
+}
+
+.loader-text {
+  color:var(--muted);
+  margin-top:8px;
+  font-size:15px;
+}
+
 @keyframes busPulse {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  100% { transform: scale(1.15); opacity: 1; }
+  from { transform:scale(.9); opacity:.7; }
+  to { transform:scale(1.15); opacity:1; }
 }
-.hide-preloader { opacity: 0; pointer-events: none; }
 
-header{
-  position:sticky;top:0;z-index:1000;
-  display:flex;align-items:center;justify-content:space-between;
-  gap:18px;padding:15px 5%;
-  background:#041522f5;border-bottom:1px solid var(--border)
+.hide-preloader {
+  opacity:0;
+  pointer-events:none;
 }
-.logo{font-size:25px;font-weight:bold;color:var(--green)}
-nav{display:flex;gap:20px;flex-wrap:wrap}
-nav a{font-size:14px;color:var(--muted)}
-nav a:hover{color:var(--green)}
-button,select,input{ font:inherit;border-radius:10px;padding:12px; }
-button{cursor:pointer;border:1px solid var(--green);background:transparent;color:white}
-button:hover{filter:brightness(1.15)}
-button.primary{background:var(--green);color:#00251b;font-weight:bold}
-button:disabled{opacity:.55;cursor:not-allowed}
-.hero{
-  padding:55px 5%;min-height:260px;
-  background:radial-gradient(ellipse at 85% 30%,#075348 0%,transparent 38%),
-             linear-gradient(120deg,#041522,#062738);
+
+/* Header */
+
+header {
+  position:sticky;
+  top:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:15px 5%;
+  background:#041522f5;
+  border-bottom:1px solid var(--border);
 }
-.eyebrow{color:var(--green);font-weight:bold;letter-spacing:2px}
-h1{font-size:clamp(34px,5vw,56px);line-height:1.1;margin:12px 0}
-h1 span{color:var(--green)}
-.hero p{color:var(--muted);max-width:600px}
-.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
-main{max-width:1300px;margin:auto;padding:25px 3%}
-.layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:18px}
-.panel,.feature,.info{
+
+.logo {
+  font-size:25px;
+  font-weight:bold;
+  color:var(--green);
+}
+
+nav {
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+nav a {
+  font-size:14px;
+  color:var(--muted);
+}
+
+nav a:hover { color:var(--green); }
+
+/* Hero */
+
+.hero {
+  padding:55px 5%;
+  min-height:260px;
+  background:
+    radial-gradient(ellipse at 85% 30%,#075348 0%,transparent 38%),
+    linear-gradient(120deg,#041522,#062738);
+}
+
+.eyebrow {
+  color:var(--green);
+  font-weight:bold;
+  letter-spacing:2px;
+}
+
+h1 {
+  font-size:clamp(34px,5vw,56px);
+  line-height:1.1;
+  margin:12px 0;
+}
+
+h1 span { color:var(--green); }
+
+.hero p {
+  color:var(--muted);
+  max-width:600px;
+}
+
+.actions {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:22px;
+}
+
+/* Main layout */
+
+main {
+  max-width:1300px;
+  margin:auto;
+  padding:25px 3%;
+}
+
+.layout {
+  display:grid;
+  grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);
+  gap:18px;
+}
+
+.panel,.feature,.info {
   background:linear-gradient(145deg,#092535,#041724);
-  border:1px solid var(--border);border-radius:17px;padding:20px;
-  min-width:0
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:20px;
+  min-width:0;
 }
-.panel h2{margin-top:0}
-.muted{color:var(--muted)}
-.route-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-select,input{background:#0a2939;color:white;border:1px solid #426271}
-#route{min-width:160px}
-#map{
-  width:100%;height:380px;border-radius:13px;
-  margin:15px 0;background:#d8e3e3;z-index:1
-}
-.map-note{font-size:12px;color:var(--muted)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.stat{border:1px solid var(--border);border-radius:13px;padding:15px}
-.big{font-size:25px;font-weight:bold;color:var(--green)}
-.stops{padding-left:22px}
-.stops li{padding:5px 0}
-.driver-buttons{display:grid;gap:10px;margin:16px 0}
-.status{padding:14px;border:1px solid #34596a;border-radius:12px;overflow-wrap:anywhere}
-.status strong{color:var(--green)}
-.features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
-.feature h3{margin:0 0 8px}
-.feature p{margin:0;color:var(--muted);font-size:14px}
-.bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
-footer{text-align:center;color:var(--muted);padding:25px}
 
-/* --- Circular Green Chat Button --- */
+.panel h2 { margin-top:0; }
+
+.muted { color:var(--muted); }
+
+.route-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+select,input {
+  background:#0a2939;
+  color:white;
+  border:1px solid #426271;
+}
+
+#areaSelect { width:100%; }
+
+#search { width:100%; }
+
+#map {
+  width:100%;
+  height:420px;
+  border-radius:13px;
+  margin:15px 0;
+  background:#d8e3e3;
+  z-index:1;
+}
+
+.map-note {
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Map panel */
+
+.map-panel {
+  position:relative;
+  background:#092535;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:13px;
+}
+
+.map-panel h3 {
+  color:var(--green);
+  margin:0 0 5px;
+  font-size:19px;
+}
+
+.map-subtitle {
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:12px;
+}
+
+.map-panel input,
+.map-panel select,
+.map-panel button {
+  width:100%;
+  padding:10px;
+  margin:4px 0;
+  border-radius:7px;
+  font-size:14px;
+}
+
+.map-panel input,
+.map-panel select {
+  border:1px solid #426271;
+  background:#0a2939;
+  color:white;
+}
+
+.map-panel button {
+  border:1px solid var(--green);
+  background:var(--green);
+  color:#00251b;
+  font-weight:bold;
+}
+
+.map-panel button.secondary {
+  background:#092535;
+  color:white;
+}
+
+#mapStatus {
+  font-size:12px;
+  margin-top:8px;
+  line-height:1.5;
+  color:var(--muted);
+  overflow-wrap:anywhere;
+}
+
+#routeInfo {
+  margin-top:8px;
+  padding:10px;
+  border-radius:8px;
+  background:#103c35;
+  font-size:13px;
+  line-height:1.6;
+  display:none;
+  overflow-wrap:anywhere;
+}
+
+#routeInfo a {
+  color:var(--green);
+  text-decoration:underline;
+}
+
+#routeInfo p { margin:6px 0; }
+
+.itm-marker {
+  width:24px;
+  height:24px;
+  background:#ff1744;
+  border:3px solid white;
+  border-radius:50%;
+  box-shadow:0 0 10px #ff1744;
+}
+
+.area-marker {
+  width:15px;
+  height:15px;
+  border-radius:50%;
+  border:2px solid white;
+  box-shadow:0 1px 5px #555;
+}
+
+.legend {
+  background:white;
+  color:#222;
+  padding:10px;
+  line-height:1.8;
+  border-radius:8px;
+  box-shadow:0 1px 5px #999;
+  font-size:12px;
+}
+
+.dot {
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-right:6px;
+}
+
+.stats {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.stat {
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:15px;
+}
+
+.big {
+  font-size:25px;
+  font-weight:bold;
+  color:var(--green);
+}
+
+.stops { padding-left:22px; }
+
+.stops li { padding:5px 0; }
+
+.driver-buttons {
+  display:grid;
+  gap:10px;
+  margin:16px 0;
+}
+
+.status {
+  padding:14px;
+  border:1px solid #34596a;
+  border-radius:12px;
+  overflow-wrap:anywhere;
+}
+
+.status strong { color:var(--green); }
+
+.features {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-top:20px;
+}
+
+.feature h3 { margin:0 0 8px; }
+
+.feature p {
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.bottom {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:20px;
+}
+
+footer {
+  text-align:center;
+  color:var(--muted);
+  padding:25px;
+}
+
+/* Chat */
+
 #chatToggle {
-  position: fixed;
-  right: 25px;
-  bottom: 25px;
-  width: 60px;
-  height: 60px;
-  background-color: #00a86b;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  font-size: 26px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-  cursor: pointer;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-  padding: 0;
+  position:fixed;
+  right:25px;
+  bottom:25px;
+  width:60px;
+  height:60px;
+  background:#00a86b;
+  color:white;
+  border:none;
+  border-radius:50%;
+  font-size:26px;
+  box-shadow:0 5px 20px #0006;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .2s;
+  padding:0;
 }
-#chatToggle:hover { transform: scale(1.1); }
 
-/* --- AI Chat Window --- */
+#chatToggle:hover { transform:scale(1.1); }
+
 #chatWindow {
-  position: fixed;
-  bottom: 95px;
-  right: 25px;
-  width: 340px;
-  height: 450px;
-  background: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 99999;
-  color: #333;
-}
-.chat-header {
-  background: #00a86b;
-  padding: 14px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  color: #fff;
-  font-size: 16px;
-}
-.chat-body {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-  font-size: 14px;
-  background: #f8fafc;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.chat-msg-bot {
-  background: #00a86b;
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 10px;
-  max-width: 85%;
-  line-height: 1.4;
-  align-self: flex-start;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-}
-.chat-msg-user {
-  background: #092535;
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 10px;
-  max-width: 85%;
-  line-height: 1.4;
-  align-self: flex-end;
-}
-.chat-footer {
-  padding: 10px 12px;
-  display: flex;
-  gap: 8px;
-  background: #fff;
-  border-top: 1px solid #e2e8f0;
-}
-.chat-footer input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #333;
-  outline: none;
-}
-.chat-footer button {
-  background: #00a86b;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
+  position:fixed;
+  bottom:95px;
+  right:25px;
+  width:min(340px,calc(100vw - 30px));
+  height:450px;
+  max-height:70vh;
+  background:white;
+  border:1px solid #ccc;
+  border-radius:14px;
+  box-shadow:0 10px 30px #0005;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  z-index:99999;
+  color:#333;
 }
 
-@media(max-width:850px){
-  .layout{grid-template-columns:1fr}
-  .features{grid-template-columns:repeat(2,1fr)}
-  header{align-items:flex-start;flex-direction:column}
-  nav{gap:14px}
+.chat-header {
+  background:#00a86b;
+  padding:14px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:bold;
+  color:white;
+  font-size:16px;
 }
-@media(max-width:500px){
-  .hero{padding:35px 5%}
-  .features,.bottom,.stats{grid-template-columns:1fr}
-  .panel{padding:14px}
-  #map{height:310px}
+
+.chat-body {
+  flex:1;
+  padding:15px;
+  overflow-y:auto;
+  font-size:14px;
+  background:#f8fafc;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.chat-msg-bot {
+  background:#00a86b;
+  color:white;
+  padding:10px 14px;
+  border-radius:10px;
+  max-width:85%;
+  line-height:1.4;
+  align-self:flex-start;
+}
+
+.chat-msg-user {
+  background:#092535;
+  color:white;
+  padding:10px 14px;
+  border-radius:10px;
+  max-width:85%;
+  line-height:1.4;
+  align-self:flex-end;
+}
+
+.chat-footer {
+  padding:10px 12px;
+  display:flex;
+  gap:8px;
+  background:white;
+  border-top:1px solid #e2e8f0;
+}
+
+.chat-footer input {
+  flex:1;
+  min-width:0;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #cbd5e1;
+  background:white;
+  color:#333;
+}
+
+.chat-footer button {
+  background:#00a86b;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+@media(max-width:850px) {
+  .layout { grid-template-columns:1fr; }
+  .features { grid-template-columns:repeat(2,1fr); }
+  header {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  nav { gap:14px; }
+}
+
+@media(max-width:500px) {
+  .hero { padding:35px 5%; }
+  .features,.bottom,.stats { grid-template-columns:1fr; }
+  .panel { padding:14px; }
+  #map { height:350px; }
+  #chatToggle { right:15px; bottom:15px; }
+  #chatWindow { right:15px; bottom:85px; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- Preloader -->
 <div id="preloader">
   <div class="loader-box">
     <div class="loader-icon">🚌</div>
     <div class="loader-logo">BusSaathi</div>
-    <div class="loader-text">Connecting Live Bus Routes...</div>
+    <div class="loader-text">Connecting Routes...</div>
   </div>
 </div>
 
@@ -254,7 +565,10 @@ footer{text-align:center;color:var(--muted);padding:25px}
 <section class="hero" id="home">
   <div class="eyebrow">SMARTER DAILY COMMUTE</div>
   <h1>Your bus. Your <span>time.</span></h1>
-  <p>Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
+  <p>
+    Explore Gorakhpur locations, calculate road routes to ITM GIDA,
+    and test your phone GPS — all in one place.
+  </p>
   <div class="actions">
     <button class="primary" onclick="goTo('student')">📍 Student Mode</button>
     <button onclick="goTo('driver')">🧭 Driver Mode</button>
@@ -262,108 +576,180 @@ footer{text-align:center;color:var(--muted);padding:25px}
 </section>
 
 <main>
-  <div class="layout">
-    <section class="panel" id="student">
-      <div class="route-row">
-        <div>
-          <h2>📍 Track Your Bus</h2>
-          <p class="muted">Choose a route to see its stops on the map.</p>
-        </div>
-        <label>Bus route<br>
-          <select id="route" onchange="changeRoute()">
-            <option value="gorakhpur">Gorakhpur Route (MMMUT - Medical - Goal Ghar)</option>
-            <option value="reverse">Reverse Route (Goal Ghar - Medical - MMMUT)</option>
-          </select>
-        </label>
-      </div>
 
-      <div id="map"></div>
-      <p id="mapStatus" class="map-note">Loading interactive map…</p>
+<div class="layout">
 
-      <div class="stats">
-        <div class="stat">
-          <div>Estimated arrival at destination</div>
-          <div class="big" id="eta">15 minutes</div>
-          <small class="muted">Sample estimate only — not live traffic data.</small>
-        </div>
-        <div>
-          <h3>Route Stops</h3>
-          <ol class="stops" id="stops"></ol>
-        </div>
-      </div>
+<section class="panel" id="student">
 
-      <div class="actions">
-        <button class="primary" onclick="showAllStops()">☷ View All Stops</button>
-        <button onclick="fitRoute()">⛶ Fit Route on Map</button>
-      </div>
-    </section>
+  <h2>📍 Gorakhpur Area Navigator</h2>
+  <p class="muted">
+    Search locations and calculate road routes to ITM GIDA.
+  </p>
 
-    <section class="panel" id="driver">
-      <h2>🧭 Driver Mode</h2>
-      <p class="muted">Test your phone's GPS and display your current location on the map.</p>
-      <div class="status">🔒 Privacy: your location stays on this device. It is not shared with students.</div>
+  <div class="map-panel">
+    <h3>🗺️ Explore Gorakhpur</h3>
+    <div class="map-subtitle">
+      Choose a starting area to find a road route to ITM GIDA.
+    </div>
 
-      <div class="driver-buttons">
-        <button class="primary" id="startBtn" onclick="startGPS()">▶ Start GPS Test</button>
-        <button id="stopBtn" onclick="stopGPS()">■ Stop GPS</button>
-      </div>
+    <input id="areaSearch" type="search"
+      placeholder="Search an area..."
+      aria-label="Search an area">
 
-      <div class="status">
-        GPS Status<br><strong id="gpsStatus">GPS not started.</strong>
-        <div id="coordinates" class="muted"></div>
-      </div>
+    <select id="areaSelect" aria-label="Select starting area">
+      <option value="">Choose starting area</option>
+    </select>
 
-      <p class="muted">GPS requires location permission and works best on an HTTPS website. Keep this page open during testing.</p>
-    </section>
+    <button id="routeBtn">Show Road Route to ITM</button>
+    <button id="clearBtn" class="secondary">Clear Route</button>
+
+    <div id="mapStatus" role="status">
+      Select an area or tap its marker on the map.
+    </div>
+
+    <div id="routeInfo"></div>
   </div>
 
-  <section class="features" id="features">
-    <div class="feature"><h3>🗺️ Interactive Map</h3><p>Explore routes and stops on a real map.</p></div>
-    <div class="feature"><h3>🔀 Multiple Routes</h3><p>Switch between Gorakhpur city stops.</p></div>
-    <div class="feature"><h3>🕒 Arrival Estimate</h3><p>See sample arrival information.</p></div>
-    <div class="feature"><h3>🔐 Privacy First</h3><p>GPS test location is not shared.</p></div>
+  <div id="map"></div>
+
+  <div class="stats">
+    <div class="stat">
+      <div>Selected Route</div>
+      <div class="big" id="routeDistance">-- km</div>
+      <small class="muted">Distance appears after calculating a road route.</small>
+    </div>
+
+    <div>
+      <h3>Nearby Locations</h3>
+      <ol class="stops" id="stops">
+        <li>ITM GIDA</li>
+        <li>GIDA Sector 7</li>
+        <li>Sahjanwa</li>
+        <li>Golghar</li>
+        <li>MMMUT</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" onclick="showAllAreas()">☷ View All Areas</button>
+    <button onclick="fitAllAreas()">⛶ Fit All Areas</button>
+  </div>
+
+  <p class="map-note">
+    Map data © OpenStreetMap contributors. Road routes use the public OSRM
+    routing service. Distances and driving times are estimates, not live bus data.
+  </p>
+
+</section>
+
+<section class="panel" id="driver">
+  <h2>🧭 Driver Mode</h2>
+  <p class="muted">
+    Test your phone's GPS and display your current location on the map.
+  </p>
+
+  <div class="status">
+    🔒 Privacy: your location is displayed on this device and is not
+    automatically shared with students.
+  </div>
+
+  <div class="driver-buttons">
+    <button class="primary" id="startBtn" onclick="startGPS()">▶ Start GPS Test</button>
+    <button id="stopBtn" onclick="stopGPS()">■ Stop GPS</button>
+  </div>
+
+  <div class="status">
+    GPS Status<br>
+    <strong id="gpsStatus">GPS not started.</strong>
+    <div id="coordinates" class="muted"></div>
+  </div>
+
+  <p class="muted">
+    GPS requires location permission and generally works best on HTTPS.
+    Keep this page open during testing.
+  </p>
+</section>
+
+</div>
+
+<section class="features" id="features">
+  <div class="feature">
+    <h3>🗺️ Interactive Map</h3>
+    <p>Explore Gorakhpur locations and map markers.</p>
+  </div>
+  <div class="feature">
+    <h3>🔀 Multiple Areas</h3>
+    <p>Search and select from multiple city and nearby locations.</p>
+  </div>
+  <div class="feature">
+    <h3>🧭 Road Navigation</h3>
+    <p>Calculate road routes and open directions in Google Maps.</p>
+  </div>
+  <div class="feature">
+    <h3>🔐 Privacy First</h3>
+    <p>Your GPS test location is not automatically shared.</p>
+  </div>
+</section>
+
+<div class="bottom">
+  <section class="info" id="about">
+    <h2>💡 About BusSaathi</h2>
+    <p class="muted">
+      BusSaathi is a student project prototype designed to help students
+      explore transport locations and road directions.
+    </p>
+    <p class="muted">
+      Note: road routes are generated using a public routing service.
+      This prototype is not connected to a real bus fleet.
+    </p>
   </section>
 
-  <div class="bottom">
-    <section class="info" id="about">
-      <h2>💡 About BusSaathi</h2>
-      <p class="muted">BusSaathi is a student project prototype designed to help college students explore transport routes and stops.</p>
-      <p class="muted">Note: routes and arrival times are examples. This prototype is not connected to a real bus fleet.</p>
-    </section>
-    <section class="info" id="developer">
-      <h2>👨‍💻 Meet the Developer</h2>
-      <p><strong style="color:var(--green)">Nitin</strong></p>
-      <p class="muted">Student Developer · Computer Science</p>
-      <a href="https://github.com/code-is-love9601" target="_blank" rel="noopener">View GitHub Profile ↗</a>
-    </section>
-  </div>
+  <section class="info" id="developer">
+    <h2>👨‍💻 Meet the Developer</h2>
+    <p><strong style="color:var(--green)">Nitin</strong></p>
+    <p class="muted">Student Developer · Computer Science</p>
+    <a href="https://github.com/code-is-love9601"
+       target="_blank" rel="noopener noreferrer">
+       View GitHub Profile ↗
+    </a>
+  </section>
+</div>
+
 </main>
 
-<footer>BusSaathi · Student Project Prototype · Live bus tracking not connected.</footer>
+<footer>
+  BusSaathi · Student Project Prototype · Live bus tracking not connected.
+</footer>
 
-<!-- Circular Green Chat Button -->
-<button id="chatToggle" onclick="toggleChatWindow()">
+<button id="chatToggle" onclick="toggleChatWindow()" aria-label="Open chat">
   💬
 </button>
 
-<!-- AI Saathi Chat Window -->
 <div id="chatWindow">
   <div class="chat-header">
     <span>🤖 Saathi - Bus Assistant</span>
-    <button onclick="toggleChatWindow()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer; font-weight:bold;">✕</button>
+    <button onclick="toggleChatWindow()"
+      style="background:none;border:none;color:#fff;font-size:18px;padding:0 5px">
+      ✕
+    </button>
   </div>
+
   <div class="chat-body" id="chatBody">
     <div class="chat-msg-bot">
-      Namaste! Main Saathi AI hoon. MMMUT, Medical Road, Goal Ghar ki bus timing, traffic delay ya stops ke baare me poocho! 🚌
+      Namaste! Main Saathi AI hoon. ITM GIDA, MMMUT, Medical Road,
+      Goal Ghar aur Gorakhpur ke areas ke baare mein poochho! 🚌
     </div>
   </div>
+
   <form class="chat-footer" onsubmit="handleChatSubmit(event)">
-    <input type="text" id="userInput" placeholder="Ask Saathi anything about bus..." required />
+    <input type="text" id="userInput"
+      placeholder="Ask Saathi about locations..."
+      autocomplete="off" required>
     <button type="submit">Send</button>
   </form>
 </div>
 
-<!-- Map JavaScript -->
 <script
  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  crossorigin="">
@@ -372,251 +758,245 @@ footer{text-align:center;color:var(--muted);padding:25px}
 <script>
 "use strict";
 
-const routeData = {
-  gorakhpur: {
-    name: "Gorakhpur Route",
-    eta: "15 minutes",
-    stops: [
-      { name: 'MMMUT', time: "08:00", coords: [26.73108, 83.43721] },
-      { name: 'Medical Road', time: "08:12", coords: [26.7320664, 83.3843874] },
-      { name: 'Goal Ghar', time: "08:25", coords: [26.751213, 83.376266] }
-    ]
-  },
-  reverse: {
-    name: "Reverse Route",
-    eta: "20 minutes",
-    stops: [
-      { name: 'Goal Ghar', time: "08:00", coords: [26.751213, 83.376266] },
-      { name: 'Medical Road', time: "08:12", coords: [26.7320664, 83.3843874] },
-      { name: 'MMMUT', time: "08:25", coords: [26.73108, 83.43721] }
-    ]
-  }
-};
-
-let map = null;
-let routeLine = null;
-let stopMarkers = [];
-let gpsMarker = null;
-let watchId = null;
-let currentRoute = "gorakhpur";
+/* Navigation */
 
 function goTo(id) {
-  document.getElementById(id).scrollIntoView({behavior:"smooth"});
+  document.getElementById(id).scrollIntoView({
+    behavior:"smooth"
+  });
 }
+
+/* Gorakhpur Map Data */
+
+const itm = {
+  name:"ITM GIDA",
+  area:"Institute of Technology and Management",
+  lat:26.74296,
+  lng:83.27327,
+  color:"#ff1744",
+  destination:true
+};
+
+const places = [
+  itm,
+  {
+    name:"GIDA Sector 7",
+    area:"Educational and Industrial Area",
+    lat:26.7460,lng:83.2690,color:"#ff9800"
+  },
+  {
+    name:"GIDA Sector 22",
+    area:"GIDA Industrial Area",
+    lat:26.7525,lng:83.2298,color:"#ff9800"
+  },
+  {
+    name:"GIDA Phase 1",
+    area:"Industrial Area",
+    lat:26.75219,lng:83.22104,color:"#ff9800"
+  },
+  {
+    name:"Kalesar",
+    area:"GIDA and Sahjanwa locality",
+    lat:26.74087,lng:83.24585,color:"#388e3c"
+  },
+  {
+    name:"Sahjanwa",
+    area:"Town and Railway Station Area",
+    lat:26.76158,lng:83.21582,color:"#388e3c"
+  },
+  {
+    name:"Jagdishpur",
+    area:"Sahjanwa locality",
+    lat:26.7650,lng:83.2420,color:"#388e3c"
+  },
+  {
+    name:"Sihapar",
+    area:"Locality near GIDA",
+    lat:26.7650,lng:83.2220,color:"#388e3c"
+  },
+  {
+    name:"Pali",
+    area:"Sahjanwa region",
+    lat:26.81963,lng:83.20392,color:"#388e3c"
+  },
+  {
+    name:"Gorakhpur Railway Station",
+    area:"Main Railway Station",
+    lat:26.7599,lng:83.3731,color:"#7b1fa2"
+  },
+  {
+    name:"Golghar",
+    area:"Commercial Centre",
+    lat:26.751213,lng:83.376266,color:"#f57c00"
+  },
+  {
+    name:"Mohaddipur",
+    area:"Major City Locality",
+    lat:26.7490,lng:83.3620,color:"#1976d2"
+  },
+  {
+    name:"Medical Road",
+    area:"Main Road Area",
+    lat:26.7320664,lng:83.3843874,color:"#1976d2"
+  },
+  {
+    name:"Gorakhpur University",
+    area:"Education Area",
+    lat:26.7485,lng:83.3810,color:"#c2185b"
+  },
+  {
+    name:"MMMUT",
+    area:"Madan Mohan Malaviya University of Technology",
+    lat:26.73108,lng:83.43721,color:"#c2185b"
+  },
+  {
+    name:"Gorakhnath Temple",
+    area:"Religious Landmark",
+    lat:26.7785,lng:83.3775,color:"#00897b"
+  },
+  {
+    name:"Geeta Press",
+    area:"Cultural Landmark",
+    lat:26.7620,lng:83.3745,color:"#8d6e63"
+  },
+  {
+    name:"Kushmi Forest",
+    area:"Green Area",
+    lat:26.7470,lng:83.3330,color:"#558b2f"
+  },
+  {
+    name:"Ramgarh Tal",
+    area:"Lake and Recreation Area",
+    lat:26.7165,lng:83.4160,color:"#0288d1"
+  },
+  {
+    name:"Nauka Vihar",
+    area:"Lakefront Attraction",
+    lat:26.7160,lng:83.4170,color:"#0288d1"
+  },
+  {
+    name:"AIIMS Gorakhpur",
+    area:"Medical Institution",
+    lat:26.7280,lng:83.4080,color:"#455a64"
+  }
+];
+
+/* Map Initialization */
+
+let map = null;
+let routeLayer = null;
+let gpsMarker = null;
+let watchId = null;
+let routeRequestId = 0;
+
+const markers = new Map();
+
+const select = document.getElementById("areaSelect");
+const search = document.getElementById("areaSearch");
+const statusBox = document.getElementById("mapStatus");
+const routeInfo = document.getElementById("routeInfo");
+const routeBtn = document.getElementById("routeBtn");
 
 function setMapStatus(message) {
-  document.getElementById("mapStatus").textContent = message;
+  statusBox.textContent = message;
 }
 
-function initialiseMap() {
-  const status = document.getElementById("mapStatus");
-
+function initMap() {
   if (typeof L === "undefined") {
-    status.textContent = "Map library could not load. Check your internet connection.";
+    setMapStatus("Map library failed to load. Check your internet connection.");
     return;
   }
 
-  try {
-    map = L.map("map");
+  map = L.map("map");
 
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    renderRoute();
-    setMapStatus("Map powered by OpenStreetMap and Leaflet.");
-
-    setTimeout(function() {
-      if (map) map.invalidateSize();
-    }, 300);
-  } catch (error) {
-    console.error("Map initialisation error:", error);
-    setMapStatus("Map could not start: " + error.message);
-  }
-}
-
-function renderRoute() {
-  if (!map || typeof L === "undefined") return;
-
-  const data = routeData[currentRoute];
-  const points = data.stops.map(stop => stop.coords);
-
-  if (routeLine) map.removeLayer(routeLine);
-  stopMarkers.forEach(marker => map.removeLayer(marker));
-  stopMarkers = [];
-
-  routeLine = L.polyline(points, {
-    color:"#00c98b",
-    weight:6,
-    opacity:0.95
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom:19,
+    attribution:'&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  data.stops.forEach(function(stop) {
-    const marker = L.marker(stop.coords).addTo(map)
-      .bindPopup("<b>" + stop.name + "</b><br>Sample time: " + stop.time);
-    stopMarkers.push(marker);
+  places.forEach(place => {
+    if (!place.destination) {
+      const option = document.createElement("option");
+      option.value = place.name;
+      option.textContent = place.name;
+      select.appendChild(option);
+    }
+
+    const icon = L.divIcon({
+      className:"",
+      html:place.destination
+        ? '<div class="itm-marker"></div>'
+        : `<div class="area-marker" style="background:${place.color}"></div>`,
+      iconSize:place.destination ? [24,24] : [15,15],
+      iconAnchor:place.destination ? [12,12] : [7.5,7.5]
+    });
+
+    const marker = L.marker([place.lat,place.lng],{icon}).addTo(map);
+
+    markers.set(place.name,marker);
+    marker.bindTooltip(place.name);
+
+    const popup = document.createElement("div");
+
+    const heading = document.createElement("b");
+    heading.textContent = place.name;
+    heading.style.color = place.color;
+    popup.appendChild(heading);
+
+    const description = document.createElement("p");
+    description.textContent = place.area;
+    popup.appendChild(description);
+
+    if (!place.destination) {
+      const button = document.createElement("button");
+      button.textContent = "Show route to ITM GIDA";
+      button.style.width = "100%";
+
+      button.addEventListener("click",() => {
+        select.value = place.name;
+        calculateRoute(place);
+      });
+
+      popup.appendChild(button);
+    } else {
+      const note = document.createElement("p");
+      note.textContent = "Destination: College";
+      popup.appendChild(note);
+    }
+
+    marker.bindPopup(popup);
   });
 
-  document.getElementById("stops").innerHTML = data.stops.map(function(stop) {
-    return "<li><strong>" + stop.name + "</strong><br><span class='muted'>" +
-      stop.time + "</span></li>";
-  }).join("");
+  fitAllAreas();
 
-  document.getElementById("eta").textContent = data.eta;
-  fitRoute();
+  const legend = L.control({position:"bottomright"});
+
+  legend.onAdd = function() {
+    const div = L.DomUtil.create("div","legend");
+
+    div.innerHTML = `
+      <b>Map Legend</b><br>
+      <span class="dot" style="background:#ff1744"></span>ITM GIDA<br>
+      <span class="dot" style="background:#ff9800"></span>GIDA Sectors<br>
+      <span class="dot" style="background:#388e3c"></span>Nearby Towns<br>
+      <span class="dot" style="background:#1976d2"></span>City Areas<br>
+      <span class="dot" style="background:#1565ff"></span>Road Route
+    `;
+
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
+
+    return div;
+  };
+
+  legend.addTo(map);
+
+  setMapStatus("Map loaded. Select a starting area to calculate a road route.");
+
+  setTimeout(() => map.invalidateSize(),300);
 }
 
-function changeRoute() {
-  currentRoute = document.getElementById("route").value;
-  renderRoute();
-}
+function fitAllAreas() {
+  if (!map) return;
 
-function fitRoute() {
-  if (!map || !routeLine) return;
-  const bounds = routeData[currentRoute].stops.map(s => s.coords);
-  map.fitBounds(bounds, { padding: [40, 40] });
-}
-
-function showAllStops() {
-  const data = routeData[currentRoute];
-  alert(data.name + "\n\n" + data.stops.map((stop, i) => (i + 1) + ". " + stop.name + " — " + stop.time).join("\n"));
-}
-
-function startGPS() {
-  const status = document.getElementById("gpsStatus");
-  const startButton = document.getElementById("startBtn");
-  const coords = document.getElementById("coordinates");
-
-  if (!navigator.geolocation) {
-    status.textContent = "GPS is not supported by this browser.";
-    return;
-  }
-
-  status.textContent = "Requesting location permission…";
-  startButton.disabled = true;
-
-  try {
-    watchId = navigator.geolocation.watchPosition(
-      function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        status.textContent = "GPS active — location received.";
-        coords.textContent = "Latitude: " + lat.toFixed(6) + " | Longitude: " + lng.toFixed(6);
-
-        if (map && typeof L !== "undefined") {
-          if (!gpsMarker) {
-            gpsMarker = L.circleMarker([lat,lng], {
-              radius:9, color:"#ffffff", weight:2,
-              fillColor:"#00e9a1", fillOpacity:1
-            }).addTo(map).bindPopup("Your location");
-          } else {
-            gpsMarker.setLatLng([lat,lng]);
-          }
-          map.setView([lat,lng], 16);
-        }
-        startButton.disabled = false;
-      },
-      function(error) {
-        status.textContent = "GPS error: " + error.message;
-        watchId = null;
-        startButton.disabled = false;
-      },
-      { enableHighAccuracy:true, maximumAge:0, timeout:20000 }
-    );
-  } catch(error) {
-    watchId = null;
-    startButton.disabled = false;
-  }
-}
-
-function stopGPS() {
-  if (watchId !== null && navigator.geolocation) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-  document.getElementById("gpsStatus").textContent = "GPS stopped.";
-  document.getElementById("coordinates").textContent = "";
-  document.getElementById("startBtn").disabled = false;
-}
-
-// Toggle Chat Window
-function toggleChatWindow() {
-  const win = document.getElementById("chatWindow");
-  win.style.display = (win.style.display === "flex") ? "none" : "flex";
-}
-
-// Smart AI Assistant Responses
-function handleChatSubmit(e) {
-  e.preventDefault();
-  const input = document.getElementById("userInput");
-  const body = document.getElementById("chatBody");
-  
-  if (!input || !input.value.trim()) return;
-
-  const userText = input.value.trim();
-  const lowerText = userText.toLowerCase();
-
-  const userMsg = document.createElement("div");
-  userMsg.className = "chat-msg-user";
-  userMsg.textContent = userText;
-  body.appendChild(userMsg);
-
-  input.value = "";
-  body.scrollTop = body.scrollHeight;
-
-  setTimeout(() => {
-    const botMsg = document.createElement("div");
-    botMsg.className = "chat-msg-bot";
-    
-    let reply = "Mujhe samajh nahi aaya. Aap bus ki timing, traffic delay, stops (MMMUT, Medical Road, Goal Ghar) ya GPS ke baare me pooch sakte hain!";
-
-    if (lowerText.includes("kab") || lowerText.includes("time") || lowerText.includes("aayegi") || lowerText.includes("eta")) {
-      const currentData = routeData[currentRoute];
-      reply = `Abhi selected route par bus arrival time lagbhag ${currentData.eta} hai.`;
-    } 
-    else if (lowerText.includes("late") || lowerText.includes("delay") || lowerText.includes("traffic")) {
-      reply = "Medical Road aur Goal Ghar ke beech halka traffic hai, is wajah se bus lagbhag 5 minute late chal rahi hai!";
-    } 
-    else if (lowerText.includes("stop") || lowerText.includes("stoppage" ) || lowerText.includes("kaha") || lowerText.includes("mmmut") || lowerText.includes("goal ghar") || lowerText.includes("medical")) {
-      const currentData = routeData[currentRoute];
-      const stopList = currentData.stops.map(s => s.name).join(" ➔ ");
-      reply = `Route stops hain: ${stopList}.`;
-    } 
-    else if (lowerText.includes("driver") || lowerText.includes("gps") || lowerText.includes("location")) {
-      reply = "Driver Mode me jaakar 'Start GPS Test' dabayein, isse aapki live location map par dikhne lagegi!";
-    } 
-    else if (lowerText.includes("hi") || lowerText.includes("hello") || lowerText.includes("hey") || lowerText.includes("namaste")) {
-      reply = "Namaste! Main Saathi AI Assistant hoon. MMMUT, Medical Road aur Goal Ghar tracking me kya madad kar sakta hoon?";
-    }
-    else if (lowerText.includes("nitin") || lowerText.includes("developer")) {
-      reply = "Yeh project Nitin ne apne doston (Darsh, Roushan, Naushad, Himanshu) ke sath banaya hai! 👨‍💻⚡";
-    }
-
-    botMsg.textContent = reply;
-    body.appendChild(botMsg);
-    body.scrollTop = body.scrollHeight;
-  }, 600);
-}
-
-// Automatic Hide Loading Screen
-function removePreloader() {
-  const preloader = document.getElementById("preloader");
-  if (preloader) {
-    preloader.classList.add("hide-preloader");
-    setTimeout(function() {
-      preloader.style.display = "none";
-    }, 600);
-  }
-}
-
-window.addEventListener("load", function() {
-  initialiseMap();
-  setTimeout(removePreloader, 1500);
-});
-
-setTimeout(removePreloader, 3000);
-</script>
-</body>
-</html>
+  cons
