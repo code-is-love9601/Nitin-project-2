@@ -27,26 +27,6 @@ body{
 }
 a{color:inherit;text-decoration:none}
 
-/* --- Dynamic Event & Festival Banner --- */
-#specialEventBanner {
-  background: linear-gradient(90deg, #ff9900, #00e9a1, #ff3366);
-  background-size: 200% 200%;
-  color: #031321;
-  text-align: center;
-  padding: 12px 20px;
-  font-weight: bold;
-  font-size: 15px;
-  display: none;
-  z-index: 2000;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-  animation: bannerGradient 4s ease infinite;
-}
-@keyframes bannerGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 /* --- Preloader --- */
 #preloader {
   position: fixed;
@@ -60,7 +40,7 @@ a{color:inherit;text-decoration:none}
   align-items: center;
   justify-content: center;
   z-index: 999999;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.6s ease;
 }
 .loader-box { text-align: center; }
 .loader-icon { font-size: 55px; animation: busPulse 1s infinite alternate; }
@@ -250,11 +230,6 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <body>
 
-<!-- Automatic Festive & Birthday Banner -->
-<div id="specialEventBanner">
-  <span id="bannerText"></span>
-</div>
-
 <!-- Preloader -->
 <div id="preloader">
   <div class="loader-box">
@@ -265,7 +240,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 </div>
 
 <header>
-  <a class="logo" id="siteLogo" href="#home">🚌 BusSaathi</a>
+  <a class="logo" href="#home">🚌 BusSaathi</a>
   <nav>
     <a href="#home">Home</a>
     <a href="#student">Student</a>
@@ -277,9 +252,9 @@ footer{text-align:center;color:var(--muted);padding:25px}
 </header>
 
 <section class="hero" id="home">
-  <div class="eyebrow" id="heroEyebrow">SMARTER DAILY COMMUTE</div>
+  <div class="eyebrow">SMARTER DAILY COMMUTE</div>
   <h1>Your bus. Your <span>time.</span></h1>
-  <p id="heroSubtext">Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
+  <p>Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
   <div class="actions">
     <button class="primary" onclick="goTo('student')">📍 Student Mode</button>
     <button onclick="goTo('driver')">🧭 Driver Mode</button>
@@ -379,7 +354,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
   </div>
   <div class="chat-body" id="chatBody">
     <div class="chat-msg-bot">
-      Namaste! Main Saathi AI hoon. MMMUT, Medical Road, Goal Ghar ki bus timing, traffic, festival updates ya stops ke baare me poocho! 🚌
+      Namaste! Main Saathi AI hoon. MMMUT, Medical Road, Goal Ghar ki bus timing, traffic delay ya stops ke baare me poocho! 🚌
     </div>
   </div>
   <form class="chat-footer" onsubmit="handleChatSubmit(event)">
@@ -393,96 +368,9 @@ footer{text-align:center;color:var(--muted);padding:25px}
  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  crossorigin="">
 </script>
-/* Finish chatbot reply */
-function handleChatSubmit(e) {
-  e.preventDefault();
 
-  const input = document.getElementById("userInput");
-  const body = document.getElementById("chatBody");
-
-  if (!input || !input.value.trim()) return;
-
-  const userText = input.value.trim();
-
-  const userMsg = document.createElement("div");
-  userMsg.className = "chat-msg-user";
-  userMsg.textContent = userText;
-  body.appendChild(userMsg);
-
-  input.value = "";
-  body.scrollTop = body.scrollHeight;
-
-  setTimeout(() => {
-    const botMsg = document.createElement("div");
-    botMsg.className = "chat-msg-bot";
-    botMsg.innerHTML = "Main aapka sawaal samajh raha hoon! Bus timing, stops, GPS ya project ke baare me poochiye.";
-    body.appendChild(botMsg);
-    body.scrollTop = body.scrollHeight;
-  }, 700);
-}
-
-/* Hide preloader and start the Leaflet map */
-window.addEventListener("load", function () {
-  checkSpecialEvents();
-
-  const preloader = document.getElementById("preloader");
-
-  if (preloader) {
-    preloader.classList.add("hide-preloader");
-
-    setTimeout(function () {
-      preloader.style.display = "none";
-    }, 600);
-  }
-
-  initialiseMap();
-});
 <script>
 "use strict";
-
-/* ==========================================================
-   DYNAMIC BRANDING & DATES ENGINE
-========================================================== */
-function checkSpecialEvents() {
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-
-  const banner = document.getElementById("specialEventBanner");
-  const bannerText = document.getElementById("bannerText");
-  const logo = document.getElementById("siteLogo");
-
-  if (month === 10 && (day === 12 || day === 13 || day === 14 || day === 24)) {
-    bannerText.innerHTML = "🏹 Happy Dussehra! May truth and goodness win over all obstacles. Wishing you a safe journey!";
-    banner.style.display = "block";
-    logo.innerHTML = "🏹 BusSaathi | Vijayadashami";
-  }
-  else if (month === 10 && day === 15) {
-    bannerText.innerHTML = "🚀 Remembering Dr. A.P.J. Abdul Kalam on his Jayanti! <i>“Dream, dream, dream. Dreams transform into thoughts.”</i>";
-    banner.style.display = "block";
-    logo.innerHTML = "🚀 BusSaathi | Kalam Special";
-  }
-  else if ((month === 10 && day >= 28) || (month === 11 && day <= 5)) {
-    bannerText.innerHTML = "🪔 Happy Diwali! May your path be illuminated with joy and prosperity. Have a safe ride!";
-    banner.style.display = "block";
-    logo.innerHTML = "🪔 BusSaathi | Diwali Special";
-  }
-  else if (month === 3 && day >= 10 && day <= 25) {
-    bannerText.innerHTML = "🎨 Happy Holi! Spreading bright colors of happiness and safe travel!";
-    banner.style.display = "block";
-    logo.innerHTML = "🎨 BusSaathi | Holi Special";
-  }
-  else if (month === 8 && day === 15) {
-    bannerText.innerHTML = "🇮🇳 Happy Independence Day! Freedom in mind, strength in words, pureness in our souls.";
-    banner.style.display = "block";
-    logo.innerHTML = "🇮🇳 BusSaathi | 15 Aug";
-  }
-  else if (month === 1 && day === 26) {
-    bannerText.innerHTML = "🇮🇳 Happy Republic Day! Celebrating the pride and unity of India.";
-    banner.style.display = "block";
-    logo.innerHTML = "🇮🇳 BusSaathi | 26 Jan";
-  }
-}
 
 const routeData = {
   gorakhpur: {
@@ -653,11 +541,13 @@ function stopGPS() {
   document.getElementById("startBtn").disabled = false;
 }
 
+// Toggle Chat Window
 function toggleChatWindow() {
   const win = document.getElementById("chatWindow");
   win.style.display = (win.style.display === "flex") ? "none" : "flex";
 }
 
+// Smart AI Assistant Responses
 function handleChatSubmit(e) {
   e.preventDefault();
   const input = document.getElementById("userInput");
@@ -680,4 +570,53 @@ function handleChatSubmit(e) {
     const botMsg = document.createElement("div");
     botMsg.className = "chat-msg-bot";
     
-    let reply = "Mujhe samajh nahi aaya. Aap bus ki timing, traffic de
+    let reply = "Mujhe samajh nahi aaya. Aap bus ki timing, traffic delay, stops (MMMUT, Medical Road, Goal Ghar) ya GPS ke baare me pooch sakte hain!";
+
+    if (lowerText.includes("kab") || lowerText.includes("time") || lowerText.includes("aayegi") || lowerText.includes("eta")) {
+      const currentData = routeData[currentRoute];
+      reply = `Abhi selected route par bus arrival time lagbhag ${currentData.eta} hai.`;
+    } 
+    else if (lowerText.includes("late") || lowerText.includes("delay") || lowerText.includes("traffic")) {
+      reply = "Medical Road aur Goal Ghar ke beech halka traffic hai, is wajah se bus lagbhag 5 minute late chal rahi hai!";
+    } 
+    else if (lowerText.includes("stop") || lowerText.includes("stoppage" ) || lowerText.includes("kaha") || lowerText.includes("mmmut") || lowerText.includes("goal ghar") || lowerText.includes("medical")) {
+      const currentData = routeData[currentRoute];
+      const stopList = currentData.stops.map(s => s.name).join(" ➔ ");
+      reply = `Route stops hain: ${stopList}.`;
+    } 
+    else if (lowerText.includes("driver") || lowerText.includes("gps") || lowerText.includes("location")) {
+      reply = "Driver Mode me jaakar 'Start GPS Test' dabayein, isse aapki live location map par dikhne lagegi!";
+    } 
+    else if (lowerText.includes("hi") || lowerText.includes("hello") || lowerText.includes("hey") || lowerText.includes("namaste")) {
+      reply = "Namaste! Main Saathi AI Assistant hoon. MMMUT, Medical Road aur Goal Ghar tracking me kya madad kar sakta hoon?";
+    }
+    else if (lowerText.includes("nitin") || lowerText.includes("developer")) {
+      reply = "Yeh project Nitin ne apne doston (Darsh, Roushan, Naushad, Himanshu) ke sath banaya hai! 👨‍💻⚡";
+    }
+
+    botMsg.textContent = reply;
+    body.appendChild(botMsg);
+    body.scrollTop = body.scrollHeight;
+  }, 600);
+}
+
+// Automatic Hide Loading Screen
+function removePreloader() {
+  const preloader = document.getElementById("preloader");
+  if (preloader) {
+    preloader.classList.add("hide-preloader");
+    setTimeout(function() {
+      preloader.style.display = "none";
+    }, 600);
+  }
+}
+
+window.addEventListener("load", function() {
+  initialiseMap();
+  setTimeout(removePreloader, 1500);
+});
+
+setTimeout(removePreloader, 3000);
+</script>
+</body>
+</html>
