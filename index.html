@@ -60,7 +60,7 @@ a{color:inherit;text-decoration:none}
   align-items: center;
   justify-content: center;
   z-index: 999999;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.4s ease;
 }
 .loader-box { text-align: center; }
 .loader-icon { font-size: 55px; animation: busPulse 1s infinite alternate; }
@@ -278,7 +278,7 @@ footer{text-align:center;color:var(--muted);padding:25px}
 
 <section class="hero" id="home">
   <div class="eyebrow" id="heroEyebrow">SMARTER DAILY COMMUTE</div>
-  <h1 id="heroHeading">Your bus. Your <span>time.</span></h1>
+  <h1>Your bus. Your <span>time.</span></h1>
   <p id="heroSubtext">Explore bus routes, view stops on an interactive map and check sample arrival information — all in one place.</p>
   <div class="actions">
     <button class="primary" onclick="goTo('student')">📍 Student Mode</button>
@@ -398,48 +398,42 @@ footer{text-align:center;color:var(--muted);padding:25px}
 "use strict";
 
 /* ==========================================================
-   DYNAMIC BRANDING & DATES ENGINE (Dussehra, Diwali, Holi, Dr. Kalam)
+   DYNAMIC BRANDING & DATES ENGINE
 ========================================================== */
 function checkSpecialEvents() {
   const now = new Date();
-  const month = now.getMonth() + 1; // 1 to 12
-  const day = now.getDate(); // 1 to 31
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
 
   const banner = document.getElementById("specialEventBanner");
   const bannerText = document.getElementById("bannerText");
   const logo = document.getElementById("siteLogo");
 
-  // 1. Dussehra (Vijayadashami - October Range)
   if (month === 10 && (day === 12 || day === 13 || day === 14 || day === 24)) {
     bannerText.innerHTML = "🏹 Happy Dussehra! May truth and goodness win over all obstacles. Wishing you a safe journey!";
     banner.style.display = "block";
     logo.innerHTML = "🏹 BusSaathi | Vijayadashami";
   }
-  // 2. Dr. A.P.J. Abdul Kalam Jayanti (15 October)
   else if (month === 10 && day === 15) {
     bannerText.innerHTML = "🚀 Remembering Dr. A.P.J. Abdul Kalam on his Jayanti! <i>“Dream, dream, dream. Dreams transform into thoughts.”</i>";
     banner.style.display = "block";
     logo.innerHTML = "🚀 BusSaathi | Kalam Special";
   }
-  // 3. Diwali (October/November Range)
   else if ((month === 10 && day >= 28) || (month === 11 && day <= 5)) {
     bannerText.innerHTML = "🪔 Happy Diwali! May your path be illuminated with joy and prosperity. Have a safe ride!";
     banner.style.display = "block";
     logo.innerHTML = "🪔 BusSaathi | Diwali Special";
   }
-  // 4. Holi (March Range)
   else if (month === 3 && day >= 10 && day <= 25) {
     bannerText.innerHTML = "🎨 Happy Holi! Spreading bright colors of happiness and safe travel!";
     banner.style.display = "block";
     logo.innerHTML = "🎨 BusSaathi | Holi Special";
   }
-  // 5. Independence Day (15 August)
   else if (month === 8 && day === 15) {
     bannerText.innerHTML = "🇮🇳 Happy Independence Day! Freedom in mind, strength in words, pureness in our souls.";
     banner.style.display = "block";
     logo.innerHTML = "🇮🇳 BusSaathi | 15 Aug";
   }
-  // 6. Republic Day (26 January)
   else if (month === 1 && day === 26) {
     bannerText.innerHTML = "🇮🇳 Happy Republic Day! Celebrating the pride and unity of India.";
     banner.style.display = "block";
@@ -616,13 +610,11 @@ function stopGPS() {
   document.getElementById("startBtn").disabled = false;
 }
 
-// Toggle Chat Window
 function toggleChatWindow() {
   const win = document.getElementById("chatWindow");
   win.style.display = (win.style.display === "flex") ? "none" : "flex";
 }
 
-// Smart AI Assistant Responses
 function handleChatSubmit(e) {
   e.preventDefault();
   const input = document.getElementById("userInput");
@@ -633,4 +625,16 @@ function handleChatSubmit(e) {
   const userText = input.value.trim();
   const lowerText = userText.toLowerCase();
 
-  const userMsg = document.c
+  const userMsg = document.createElement("div");
+  userMsg.className = "chat-msg-user";
+  userMsg.textContent = userText;
+  body.appendChild(userMsg);
+
+  input.value = "";
+  body.scrollTop = body.scrollHeight;
+
+  setTimeout(() => {
+    const botMsg = document.createElement("div");
+    botMsg.className = "chat-msg-bot";
+    
+    let reply = "Mujhe samajh nahi aaya. Aap bus ki timing, traffic de
