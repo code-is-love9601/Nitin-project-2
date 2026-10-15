@@ -8,7 +8,366 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<style>
+<style>/* ==========================================
+   BUSSAATHI — CYBERPUNK NEON UPGRADE
+========================================== */
+
+:root {
+  --neon-green: #00ffb3;
+  --neon-blue: #00c8ff;
+  --neon-purple: #a855f7;
+}
+
+/* Animated futuristic background */
+body {
+  background:
+    radial-gradient(ellipse at 10% 10%, #073c42 0%, transparent 35%),
+    radial-gradient(ellipse at 90% 80%, #10264d 0%, transparent 35%),
+    #020914;
+  background-attachment: fixed;
+}
+
+/* Moving grid */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(#00ffb30b 1px, transparent 1px),
+    linear-gradient(90deg, #00ffb30b 1px, transparent 1px);
+
+  background-size: 38px 38px;
+  animation: gridMove 12s linear infinite;
+}
+
+@keyframes gridMove {
+  from { background-position: 0 0; }
+  to   { background-position: 38px 38px; }
+}
+
+/* Premium glowing logo */
+.logo {
+  text-shadow:
+    0 0 8px #00ffb3,
+    0 0 22px #00ffb388;
+  transition: .3s;
+}
+
+.logo:hover {
+  text-shadow:
+    0 0 10px #00ffb3,
+    0 0 35px #00ffb3,
+    0 0 60px #00c8ff;
+  transform: scale(1.04);
+}
+
+/* Glass-like panels */
+.panel,
+.feature,
+.info {
+  background: linear-gradient(
+    145deg,
+    rgba(8, 36, 52, .94),
+    rgba(3, 14, 27, .96)
+  );
+
+  border: 1px solid #00ffb344;
+
+  box-shadow:
+    0 0 15px #00ffb30b,
+    inset 0 0 20px #00c8ff05;
+
+  backdrop-filter: blur(12px);
+  transition:
+    transform .3s ease,
+    border-color .3s ease,
+    box-shadow .3s ease;
+}
+
+.panel:hover,
+.feature:hover,
+.info:hover {
+  border-color: #00ffb3aa;
+
+  box-shadow:
+    0 0 20px #00ffb31c,
+    0 0 45px #00c8ff0b;
+}
+
+/* Neon buttons */
+button {
+  position: relative;
+  overflow: hidden;
+  transition: .25s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  border-color: var(--neon-green);
+
+  box-shadow:
+    0 0 12px #00ffb355,
+    0 0 28px #00ffb322;
+}
+
+button.primary {
+  background: linear-gradient(
+    110deg,
+    #00ffb3,
+    #00d9ff
+  );
+
+  border: none;
+  box-shadow: 0 0 18px #00ffb333;
+}
+
+button.primary:hover {
+  box-shadow:
+    0 0 18px #00ffb3,
+    0 0 38px #00c8ff55;
+}
+
+/* Futuristic hero heading */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #00ffb333;
+}
+
+.hero h1 span {
+  background: linear-gradient(
+    90deg,
+    #00ffb3,
+    #00c8ff,
+    #a855f7,
+    #00ffb3
+  );
+
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  animation: neonGradient 5s linear infinite;
+}
+
+@keyframes neonGradient {
+  to { background-position: 300% center; }
+}
+
+/* Neon section headings */
+.panel h2,
+.info h2 {
+  text-shadow: 0 0 16px #00ffb322;
+}
+
+/* Glowing team cards */
+.member {
+  background: linear-gradient(
+    145deg,
+    #0b283bcc,
+    #06111fcc
+  );
+
+  border-color: #00ffb344;
+}
+
+.member:hover {
+  transform: translateY(-8px) scale(1.015);
+  border-color: #00ffb3;
+
+  box-shadow:
+    0 0 20px #00ffb322,
+    0 12px 35px #0008;
+}
+
+/* Animated map border */
+#map {
+  border: 1px solid #00ffb377;
+
+  box-shadow:
+    0 0 15px #00ffb322,
+    0 0 35px #00c8ff11;
+}
+
+/* Pulsing live bus status */
+#liveBusInfo {
+  text-shadow: 0 0 10px #00ffb344;
+}
+
+/* Developer section */
+.developer-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 35px 20px;
+  margin-top: 22px;
+  text-align: center;
+  border: 1px solid #00ffb366;
+  border-radius: 20px;
+
+  background:
+    radial-gradient(
+      ellipse at top,
+      #063d46,
+      transparent 75%
+    ),
+    #04111e;
+
+  box-shadow: 0 0 30px #00ffb310;
+}
+
+.developer-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: #00c8ff;
+  margin-bottom: 14px;
+}
+
+.developer-name {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: clamp(30px, 6vw, 62px);
+  font-weight: 800;
+  letter-spacing: -2px;
+
+  color: #fff;
+
+  text-shadow:
+    0 0 5px #fff,
+    0 0 12px #00ffb3,
+    0 0 30px #00ffb3,
+    0 0 60px #00c8ff;
+
+  animation: developerFlicker 3s infinite;
+}
+
+.developer-name::before,
+.developer-name::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.developer-name::before {
+  color: #00ffb3;
+  transform: translateX(-2px);
+  clip-path: inset(0 0 65% 0);
+  animation: glitchOne 2.5s infinite steps(1);
+}
+
+.developer-name::after {
+  color: #ff3bd4;
+  transform: translateX(2px);
+  clip-path: inset(65% 0 0 0);
+  animation: glitchTwo 3s infinite steps(1);
+}
+
+@keyframes developerFlicker {
+  0%, 18%, 22%, 55%, 57%, 100% {
+    opacity: 1;
+  }
+
+  20%, 56% {
+    opacity: .72;
+  }
+
+  21%, 58% {
+    opacity: .95;
+  }
+}
+
+@keyframes glitchOne {
+  0%, 90%, 100% {
+    transform: translateX(-2px);
+  }
+
+  91% {
+    transform: translateX(5px);
+  }
+
+  93% {
+    transform: translateX(-5px);
+  }
+
+  95% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes glitchTwo {
+  0%, 88%, 100% {
+    transform: translateX(2px);
+  }
+
+  89% {
+    transform: translateX(-5px);
+  }
+
+  92% {
+    transform: translateX(5px);
+  }
+
+  94% {
+    transform: translateX(-2px);
+  }
+}
+
+.developer-role {
+  color: #b5d5e5;
+  font-family: var(--mono);
+  font-size: 13px;
+  margin-top: 16px;
+  letter-spacing: 1px;
+}
+
+.developer-status {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 8px 14px;
+  border: 1px solid #00ffb355;
+  border-radius: 30px;
+  color: #00ffb3;
+  background: #00ffb30b;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.developer-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  background: #00ffb3;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #00ffb3;
+  animation: dotPulse 1.2s infinite alternate;
+}
+
+@keyframes dotPulse {
+  to {
+    opacity: .35;
+    box-shadow: 0 0 2px #00ffb3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  .hero h1 span,
+  .developer-name,
+  .developer-name::before,
+  .developer-name::after,
+  .developer-dot {
+    animation: none !important;
+  }
+}
 :root{--bg:#031321;--panel:#071e2d;--green:#00e9a1;--text:#f4fbff;--muted:#a8bdca;--border:#087d70;--mono:'JetBrains Mono','Fira Code',Consolas,monospace;--sans:'Space Grotesk',Arial,Helvetica,sans-serif}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -319,7 +678,7 @@ h2.scroll-drop.is-visible{transform:translate3d(0,0,0);letter-spacing:normal}
       <article class="member">
         <div class="avatar">NS</div>
         <h3>Nitin Singh</h3>
-        <div class="roles"><span class="role">Frontend</span><span class="role">Student Dashboard</span></div>
+        <div class="roles"><span class="role">Software Developer</span><span class="role">Student Dashboard</span></div>
       </article>
       <article class="member">
         <div class="avatar">MR</div>
